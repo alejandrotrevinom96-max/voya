@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(unzip -o voya-mvp-bloque1.zip)",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(unzip -o voya-mvp-bloque2.zip)"
+    ]
+  }
+}

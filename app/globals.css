@@ -1,0 +1,35 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background-color: #faf6f1;
+  color: #2c1810;
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-brown-dark text-cream hover:scale-105 transition disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed font-medium;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-white border border-sand-dark text-brown-dark hover:bg-cream-warm transition font-medium;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full text-brown-mid hover:bg-cream-warm transition;
+  }
+  .input-base {
+    @apply w-full px-5 py-3 rounded-2xl text-base outline-none transition border bg-white text-brown-dark border-sand-dark focus:border-terracotta focus:ring-2 focus:ring-terracotta-soft;
+  }
+  .card-base {
+    @apply rounded-3xl bg-white border border-border p-6;
+  }
+}
