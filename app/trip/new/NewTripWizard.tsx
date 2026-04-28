@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent, KeyboardEvent } from "react";
+import { useState, KeyboardEvent, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createTrip } from "../actions";
@@ -17,6 +17,11 @@ export default function NewTripWizard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Cooldown anti click fantasma: cuando se cambia de paso,
+  // se bloquean todos los onClick por 400ms para que el "mouseup"
+  // del click anterior NO active el botón nuevo en la misma posición.
+  const lastStepChangeRef = useRef<number>(0);
+
   // Form state
   const [name, setName] = useState("");
   const [destination, setDestination] = useState("");
@@ -29,7 +34,6 @@ export default function NewTripWizard() {
   const [currency, setCurrency] = useState("MXN");
   const [interests, setInterests] = useState<string[]>([]);
 
-  // Validaciones por paso
   const canProceedStep1 =
     name.trim().length > 0 && destination.trim().length > 0;
   const canProceedStep2 =
@@ -44,30 +48,40 @@ export default function NewTripWizard() {
     );
   }
 
-  // CRÍTICO: prevenir submit con Enter en cualquier input (excepto textarea o el botón submit final)
-  function handleFormKeyDown(e: KeyboardEvent<HTMLFormElement>) {
+  function handleFormKeyDown(e: KeyboardEvent<HTMLDivElement>) {
     const target = e.target as HTMLElement;
     if (e.key === "Enter" && target.tagName !== "TEXTAREA") {
-      // Solo permitir Enter como submit si estamos en el paso 4 Y el target ES el botón submit
-      const isSubmitButton =
-        target.tagName === "BUTTON" &&
-        (target as HTMLButtonElement).type === "submit";
-      if (!isSubmitButton || step !== 4) {
-        e.preventDefault();
-      }
+      e.preventDefault();
     }
   }
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
+  // Avanzar/retroceder paso. Marca el timestamp para activar cooldown.
+  function goToStep(newStep: Step) {
+    lastStepChangeRef.current = Date.now();
+    setStep(newStep);
+  }
 
-    // CRÍTICO: solo submitear si estamos en el paso final
-    // Esto previene cualquier submit accidental por Enter o clicks raros
-    if (step !== 4) {
+  // Detecta si estamos dentro del cooldown post-cambio-de-paso
+  function isInCooldown(): boolean {
+    return Date.now() - lastStepChangeRef.current < 400;
+  }
+
+  async function handleCreate() {
+    // Protección 1: no submit si estamos dentro del cooldown
+    // (esto bloquea el click fantasma que viene justo después del paso 3 → 4)
+    if (isInCooldown()) {
+      console.log("[wizard] click ignored (cooldown)");
       return;
     }
 
-    if (!canSubmit) return;
+    // Protección 2: no submit si ya estamos cargando
+    if (loading) return;
+
+    // Protección 3: solo permitir si todos los campos requeridos están completos
+    if (!canSubmit) {
+      setError("Completa los datos básicos del viaje");
+      return;
+    }
 
     setError("");
     setLoading(true);
@@ -99,7 +113,8 @@ export default function NewTripWizard() {
   const today = toDateInput(new Date());
 
   return (
-    <form onSubmit={handleSubmit} onKeyDown={handleFormKeyDown} className="space-y-8">
+    // CRÍTICO: <div> en vez de <form>. Sin form, no hay submit posible.
+    <div onKeyDown={handleFormKeyDown} className="space-y-8">
       {/* Progress indicator */}
       <div className="flex items-center gap-3 mb-8">
         {[1, 2, 3, 4].map((n) => (
@@ -385,7 +400,7 @@ export default function NewTripWizard() {
         ) : (
           <button
             type="button"
-            onClick={() => setStep((step - 1) as Step)}
+            onClick={() => goToStep((step - 1) as Step)}
             className="btn-ghost"
             disabled={loading}
           >
@@ -396,7 +411,7 @@ export default function NewTripWizard() {
         {step < 4 ? (
           <button
             type="button"
-            onClick={() => setStep((step + 1) as Step)}
+            onClick={() => goToStep((step + 1) as Step)}
             disabled={
               (step === 1 && !canProceedStep1) ||
               (step === 2 && !canProceedStep2)
@@ -406,8 +421,11 @@ export default function NewTripWizard() {
             Siguiente →
           </button>
         ) : (
+          // BULLETPROOF: type="button" + onClick + cooldown anti click fantasma.
+          // No hay manera de crear el viaje sin un click intencional del usuario.
           <button
-            type="submit"
+            type="button"
+            onClick={handleCreate}
             disabled={!canSubmit || loading}
             className="btn-primary"
           >
@@ -415,6 +433,6 @@ export default function NewTripWizard() {
           </button>
         )}
       </div>
-    </form>
+    </div>
   );
 }
