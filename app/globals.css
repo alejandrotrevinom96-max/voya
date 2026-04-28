@@ -6,6 +6,7 @@
 
 html {
   scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -14,14 +15,39 @@ body {
   color: #2c1810;
   font-weight: 300;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Mejor scrollbar en webkit */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #faf6f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #dcc4ae;
+  border-radius: 10px;
+  border: 2px solid #faf6f1;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c97b5a;
+}
+
+/* Selection */
+::selection {
+  background-color: #e8b4a0;
+  color: #2c1810;
 }
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-brown-dark text-cream hover:scale-105 transition disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed font-medium;
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-brown-dark text-cream hover:scale-105 active:scale-95 transition disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed font-medium;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-white border border-sand-dark text-brown-dark hover:bg-cream-warm transition font-medium;
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-white border border-sand-dark text-brown-dark hover:bg-cream-warm active:scale-95 transition font-medium;
   }
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full text-brown-mid hover:bg-cream-warm transition;
@@ -31,5 +57,24 @@ body {
   }
   .card-base {
     @apply rounded-3xl bg-white border border-border p-6;
+  }
+}
+
+/* Mejor experiencia táctil en mobile */
+@media (max-width: 768px) {
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Reducir motion para usuarios que lo prefieran */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

@@ -2,207 +2,146 @@
 
 App para planear viajes con AI: descubre actividades, organízalas en un calendario y obtén un presupuesto realista.
 
-**Stack:** Next.js 14 · TypeScript · Tailwind · Supabase Auth + DB · Claude AI
+**Stack:** Next.js 14 · TypeScript · Tailwind · Supabase · Claude AI
 
 ---
 
 ## Estado actual
 
-✅ **Bloque 1:** Setup base + autenticación (signup, login, logout, RLS)
+✅ **Bloque 1:** Setup base + autenticación
+✅ **Bloque 2:** Dashboard funcional + creación de viajes
+✅ **Bloque 3:** Integración Claude AI + actividades + presupuesto en vivo
+✅ **Bloque 4 (este):** Calendario + asignar actividades a días + export ICS
+- Vista de calendario con cada día del viaje
+- Asignar actividades a días específicos (dropdown selector)
+- Cambiar de día fácilmente
+- Asignar hora opcional a cada actividad (formato 12h)
+- Reordenar actividades dentro de un día (botones ↑↓)
+- Quitar del calendario sin perder del catálogo
+- Presupuesto por día y total general
+- Filtro nuevo: "📅 Programadas" para ver solo las que ya tienen día
+- **Export a ICS** — descarga archivo que importa a Google/Apple/Outlook Calendar
 
-✅ **Bloque 2 (este):** Dashboard funcional + creación de viajes
-- Dashboard con cards de viajes (estado, fechas, contador de actividades)
-- Wizard de creación en 3 pasos (info básica, fechas, intereses)
-- Vista detalle del viaje con info completa
-- Editar viaje
-- Borrar viaje con confirmación
-- Empty state cuando no hay viajes
-- Página 404 custom
-
-⏳ **Bloque 3:** Integración Claude AI + descubrir actividades
-
-⏳ **Bloque 4:** Calendario + presupuesto + export ICS
-
-⏳ **Bloque 5:** Pulido final + deploy
+⏳ **Bloque 5:** Pulido final + deploy a producción
 
 ---
 
-## 🚀 Si vienes del Bloque 1
+## 🚀 Si vienes del Bloque 3
 
-**Buenas noticias:** no necesitas hacer nada en Supabase, las tablas ya están listas.
-
-Solo:
+**Necesitas reinstalar dependencias** porque agregamos `date-fns` para fechas:
 
 ```bash
-# Reemplaza la carpeta voya-mvp con la nueva versión (mantén tu .env.local)
-# Reinstala dependencias por si cambió algo
 npm install
-
-# Corre
 npm run dev
 ```
 
-Abre http://localhost:3000 y verás el dashboard. ¡A crear viajes!
+¡Listo! Ya puedes asignar actividades a días y exportar.
 
 ---
 
-## 🚀 Setup desde cero
+## ✅ Checklist de verificación del Bloque 4
 
-### 1. Instala dependencias
+1. ✅ Entra a un viaje que tenga actividades agregadas (las que marcaste con "+ Agregar")
+2. ✅ Abajo del catálogo ves la sección **"Tu itinerario"** con cada día del viaje
+3. ✅ En cualquier card de actividad agregada, click en el botón **"📅 Asignar a día"**
+4. ✅ Aparece dropdown con todos los días del viaje → elige uno
+5. ✅ La actividad aparece en ese día del calendario abajo
+6. ✅ El botón cambia a **"✓ Día X · cambiar"** (verde)
+7. ✅ Click en él para cambiar de día → eliges otro → se mueve
+8. ✅ En el calendario, click en **"+ Agregar hora"** de una actividad
+9. ✅ Selecciona una hora → click ✓ → se guarda
+10. ✅ Las actividades con hora se ordenan automáticamente (más temprano arriba)
+11. ✅ Sin hora → se ordenan por orden de adición y puedes mover con ↑↓
+12. ✅ Click en ✕ de una actividad agendada → confirma → vuelve a estar solo en el catálogo (sin programar)
+13. ✅ Cada día muestra su presupuesto parcial
+14. ✅ Al final del calendario hay un **total general**
+15. ✅ Click en **"📥 Exportar a calendario"** → se descarga un `.ics`
+16. ✅ Abre el archivo `.ics` → tu app de calendario (Apple Calendar, Google Calendar, Outlook) te pregunta si quieres importar los eventos
+17. ✅ Importa → ves todas las actividades en sus días correctos
 
-```bash
-cd voya-mvp
-npm install
-```
-
-### 2. Configura Supabase
-
-1. SQL Editor → New query → pega el contenido de `supabase/schema.sql` → Run
-2. Verifica 4 tablas creadas: `profiles`, `trips`, `activities`, `schedule`
-
-### 3. Configura Auth
-
-- **Authentication → URL Configuration:**
-  - Site URL: `http://localhost:3000`
-  - Redirect URLs: `http://localhost:3000/**`
-- **Authentication → Providers → Email:** desactiva "Confirm email" (solo en dev)
-
-### 4. Variables de entorno
-
-Crea `.env.local`:
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=https://tuproyecto.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGc...
-ANTHROPIC_API_KEY=sk-ant-... # opcional, se usa en bloque 3
-```
-
-### 5. Corre
-
-```bash
-npm run dev
-```
+Si todo lo anterior funciona, **el Bloque 4 está listo**. ✨
 
 ---
 
-## ✅ Checklist de verificación del Bloque 2
+## 🎨 Lo que construimos
 
-Si vienes del Bloque 1 ya validaste auth. Ahora prueba el flujo completo de viajes:
+### Vista de calendario
+- Cada día como una card con su número, fecha completa, y badge si es fin de semana
+- Días libres claramente marcados
+- Presupuesto por día visible
+- Total general al final
 
-1. ✅ En el dashboard, click en **"Crear mi primer viaje"** (o el botón "+ Nuevo viaje")
-2. ✅ Llena el wizard:
-   - Paso 1: Nombre = "Mérida con las amigas", Destino = "Mérida", País = "México"
-   - Paso 2: Fechas (ej: 1 mes en el futuro), Viajeros = 2, Moneda = MXN
-   - Paso 3: Selecciona algunos intereses (Gastronomía, Cultura, Naturaleza)
-3. ✅ Click en **"Crear viaje ✦"** → te redirige a la página del viaje
-4. ✅ Verifica que se ve toda la info: emoji, nombre, destino, fechas, duración, viajeros, intereses
-5. ✅ Click en **"Volver al dashboard"** → ahora ves tu viaje en la lista
-6. ✅ Click en el viaje → vuelves a la vista detalle
-7. ✅ Click en **"Editar"** → cambia algo (ej: el nombre) → Guardar → ves el cambio reflejado
-8. ✅ Click en **"Borrar viaje"** → confirma → vuelves al dashboard sin el viaje
-9. ✅ Verifica en Supabase: **Table Editor → trips** → la tabla está vacía después de borrar
-10. ✅ Crea otro viaje y verifica que aparece en `trips` en Supabase
+### Asignación de actividades
+- Botón "Asignar a día" en cada card del catálogo (solo aparece si está agregada al plan)
+- Dropdown limpio con la lista de días numerada
+- Cambiar de día con un click
+- Indicador visual claro de qué actividades están programadas
 
-Si todo lo anterior funciona, **el Bloque 2 está listo**. ✨
+### Hora opcional
+- Click "+ Agregar hora" → input nativo de tiempo
+- Formato 12h al mostrar (más amigable: "9:00 AM" vs "09:00")
+- Botón "Quitar hora" para volver a sin hora
+- Auto-ordenamiento por hora cuando aplican
 
----
+### Reordenar
+- Botones ↑↓ en cada actividad agendada
+- Solo aparecen si tiene sentido (no en primer/último item)
+- Animación de loading sutil mientras se actualiza
 
-## 📁 Estructura del proyecto
-
-```
-voya-mvp/
-├── app/
-│   ├── auth/
-│   │   ├── actions.ts          # signup, login, logout
-│   │   ├── login/page.tsx
-│   │   └── signup/page.tsx
-│   ├── dashboard/page.tsx      # Dashboard con lista de viajes
-│   ├── trip/
-│   │   ├── actions.ts          # createTrip, updateTrip, deleteTrip
-│   │   ├── new/                # Crear viaje (wizard 3 pasos)
-│   │   └── [id]/
-│   │       ├── page.tsx        # Vista detalle
-│   │       └── edit/page.tsx   # Editar viaje
-│   ├── globals.css
-│   ├── layout.tsx
-│   ├── not-found.tsx
-│   └── page.tsx                # Landing
-├── components/
-│   ├── AppHeader.tsx
-│   └── trip/
-│       ├── TripCard.tsx
-│       ├── EmptyTrips.tsx
-│       └── DeleteTripButton.tsx
-├── lib/
-│   ├── supabase/
-│   │   ├── client.ts
-│   │   ├── server.ts
-│   │   └── middleware.ts
-│   └── utils/
-│       └── date.ts             # Formateo de fechas, duración, status
-├── supabase/
-│   └── schema.sql
-├── types/
-│   └── index.ts                # Tipos compartidos + opciones de UI
-└── middleware.ts
-```
-
----
-
-## 🎨 Features del Bloque 2
-
-### Dashboard
-- Lista de viajes en grid responsivo (1/2/3 cols según pantalla)
-- Cada card muestra: emoji, nombre, destino, fechas, duración, viajeros, contador de actividades
-- Badge dinámico de estado (próximamente, en X días, en curso, completado)
-- Empty state bonito cuando no hay viajes
-- Botón "+ Nuevo viaje" en header
-
-### Crear viaje (wizard)
-- 3 pasos con indicador de progreso visual
-- Validación por paso (no puedes avanzar sin llenar lo requerido)
-- Paso 1: nombre + destino + país
-- Paso 2: fechas (con validación de rango) + viajeros + moneda (9 monedas LATAM/USD/EUR)
-- Paso 3: 10 intereses para elegir (cards con emoji)
-- Auto-asigna emoji al viaje según los intereses seleccionados
-
-### Vista detalle del viaje
-- Header con emoji grande y info principal
-- Stats: fechas, duración, viajeros, estado
-- Tags de intereses
-- Placeholder de actividades (bloque 3)
-- Botón editar
-- Zona de borrar con confirmación
-
-### Editar viaje
-- Form completo con todos los campos
-- Misma UX de selección de intereses
-- Cancelar regresa sin guardar
-
-### Borrar viaje
-- Modal de confirmación inline
-- Borrado en cascada (también borra actividades y schedule)
-- Redirige al dashboard
+### Export ICS
+- Compatible con Google Calendar, Apple Calendar, Outlook
+- Eventos con nombre, descripción, ubicación
+- Si tienen hora → eventos timed con duración estimada
+- Si no tienen hora → eventos all-day
+- Footer "— Generado por Voya" en cada evento
+- Nombre de archivo: `voya-nombre-del-viaje.ics`
 
 ---
 
 ## 🐛 Troubleshooting
 
-**"No puedo crear viaje" / Error 500**
-→ Verifica que el `schema.sql` se corrió completo. Revisa que `trips` tenga la columna `interests` como `TEXT[]`.
+**El botón "Asignar a día" no aparece**
+→ Solo aparece en actividades que ya marcaste con "+ Agregar" al plan.
 
-**El emoji no se muestra**
-→ Algunos navegadores tienen problemas con emojis. No es bug, es cosmético.
+**El archivo ICS no se importa bien**
+→ Verifica que las fechas del viaje sean válidas. Si las cambiaste después de agendar, las actividades pueden quedar fuera de rango.
 
-**El dashboard muestra "viajeros" mal pluralizado**
-→ Probable bug, repórtame el caso exacto.
+**Los días no se ordenan correctamente**
+→ Asegúrate de que `start_date` < `end_date` en el viaje. Edita el viaje si es necesario.
+
+**No puedo agregar la misma actividad a 2 días distintos**
+→ Es por diseño. Cada actividad solo puede estar en 1 día. Si quieres "el mismo restaurante 2 veces", dale a "Generar más actividades" y obtienes opciones similares.
 
 ---
 
-## ⏭️ Bloque 3: Próximamente
+## 📁 Estructura agregada en este bloque
 
-- Integración con Claude API
-- Generador de actividades curadas con AI
-- Lista de actividades por viaje
-- Agregar/quitar actividades de tu plan
-- Disclaimer de AI
+```
+voya-mvp/
+├── app/
+│   ├── api/calendar/export/route.ts    # Genera archivo ICS
+│   └── trip/schedule-actions.ts        # CRUD de schedule
+├── components/
+│   └── calendar/
+│       ├── AddToDayButton.tsx          # Dropdown para elegir día
+│       ├── CalendarView.tsx            # Vista principal del calendario
+│       ├── ExportCalendarButton.tsx    # Botón de descarga ICS
+│       └── ScheduledActivity.tsx       # Card de actividad agendada
+└── lib/
+    └── utils/
+        └── calendar.ts                 # Helpers de días del viaje
+```
+
+---
+
+## ⏭️ Bloque 5: Pulido final + Deploy
+
+Próximamente:
+- Estados de loading bonitos en toda la app
+- Manejo de errores mejorado (toasts, mensajes claros)
+- Skeleton screens mientras carga
+- Mobile UX refinada (botones más grandes, scroll suave)
+- SEO + Open Graph para compartir
+- Analytics básicos (Vercel Analytics)
+- Configuración de producción en Supabase (activar email confirmation)
+- **Deploy a Vercel paso a paso**

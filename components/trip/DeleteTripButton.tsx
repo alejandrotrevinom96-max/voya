@@ -2,58 +2,53 @@
 
 import { useState } from "react";
 import { deleteTrip } from "@/app/trip/actions";
+import ConfirmModal from "@/components/ui/ConfirmModal";
+import { useToast } from "@/components/ui/Toast";
 
 interface DeleteTripButtonProps {
   tripId: string;
   tripName: string;
 }
 
-export default function DeleteTripButton({ tripId, tripName }: DeleteTripButtonProps) {
+export default function DeleteTripButton({
+  tripId,
+  tripName,
+}: DeleteTripButtonProps) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
 
   async function handleDelete() {
     setLoading(true);
-    await deleteTrip(tripId);
-    // No necesitamos resetear loading porque deleteTrip hace redirect
+    try {
+      await deleteTrip(tripId);
+      // No necesitamos toast porque deleteTrip hace redirect
+    } catch (err) {
+      showToast("No se pudo borrar el viaje", "error");
+      setLoading(false);
+      setShowConfirm(false);
+    }
   }
 
-  if (!showConfirm) {
-    return (
+  return (
+    <>
       <button
         onClick={() => setShowConfirm(true)}
         className="text-sm text-error hover:bg-error/10 px-4 py-2 rounded-full transition"
       >
         Borrar viaje
       </button>
-    );
-  }
 
-  return (
-    <div className="card-base bg-error/5 border-error/20">
-      <h3 className="font-display text-xl font-medium text-error mb-2">
-        ¿Borrar "{tripName}"?
-      </h3>
-      <p className="text-sm text-brown-mid mb-4">
-        Esta acción no se puede deshacer. Se borrarán todas las actividades y
-        el calendario de este viaje.
-      </p>
-      <div className="flex gap-3">
-        <button
-          onClick={() => setShowConfirm(false)}
-          disabled={loading}
-          className="btn-secondary text-sm"
-        >
-          Cancelar
-        </button>
-        <button
-          onClick={handleDelete}
-          disabled={loading}
-          className="px-6 py-3 rounded-full bg-error text-white text-sm font-medium hover:scale-105 transition disabled:opacity-50"
-        >
-          {loading ? "Borrando..." : "Sí, borrar"}
-        </button>
-      </div>
-    </div>
+      <ConfirmModal
+        isOpen={showConfirm}
+        onClose={() => !loading && setShowConfirm(false)}
+        onConfirm={handleDelete}
+        title={`¿Borrar "${tripName}"?`}
+        description="Esta acción no se puede deshacer. Se borrarán todas las actividades y el calendario de este viaje."
+        confirmLabel="Sí, borrar"
+        variant="danger"
+        loading={loading}
+      />
+    </>
   );
 }
