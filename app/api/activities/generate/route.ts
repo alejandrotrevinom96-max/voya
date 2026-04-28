@@ -1,13 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { anthropic, CLAUDE_MODEL } from "@/lib/ai/client";
+import { getAnthropicClient, CLAUDE_MODEL } from "@/lib/ai/client";
 import {
   buildSystemPrompt,
   buildUserPrompt,
   validateAIResponse,
 } from "@/lib/ai/prompts";
 
-export const maxDuration = 60; // Vercel: permite hasta 60s para esta función
+// Forzar runtime de Node.js (no edge) porque el SDK de Anthropic
+// y supabase server client necesitan APIs de Node
+export const runtime = "nodejs";
+
+// Permitir hasta 60s en producción (requiere Vercel Pro para >10s)
+// En plan free se queda en 10s default
+export const maxDuration = 60;
+
+// No cachear esta route — cada llamada debe ejecutarse fresh
+export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
@@ -66,7 +75,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 5. Llamar a Claude
+    // 5. Llamar a Claude (lazy init evita errores en build)
+    const anthropic = getAnthropicClient();
+
     const message = await anthropic.messages.create({
       model: CLAUDE_MODEL,
       max_tokens: 4096,
@@ -98,7 +109,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error:
-            err instanceof Error ? err.message : "Error procesando respuesta de AI",
+            err instanceof Error
+              ? err.message
+              : "Error procesando respuesta de AI",
         },
         { status: 500 }
       );
@@ -145,16 +158,33 @@ export async function POST(req: NextRequest) {
       const status = (err as { status: number }).status;
       if (status === 401) {
         return NextResponse.json(
-          { error: "API key de Claude inválida. Verifica tu configuración." },
+          {
+            error:
+              "API key de Claude inválida. Verifica tu configuración en Vercel.",
+          },
           { status: 500 }
         );
       }
       if (status === 429) {
         return NextResponse.json(
-          { error: "Demasiadas solicitudes. Espera un momento e intenta de nuevo." },
+          {
+            error:
+              "Demasiadas solicitudes. Espera un momento e intenta de nuevo.",
+          },
           { status: 429 }
         );
       }
+    }
+
+    // Error de configuración (API key faltante)
+    if (err instanceof Error && err.message.includes("ANTHROPIC_API_KEY")) {
+      return NextResponse.json(
+        {
+          error:
+            "Falta configurar la API key de Claude. Contacta al administrador.",
+        },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json(

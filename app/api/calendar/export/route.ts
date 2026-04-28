@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { formatICSDate } from "@/lib/utils/calendar";
 import { addDays, parseISO, format } from "date-fns";
 
+export const dynamic = "force-dynamic";
+
 /**
  * Escapa caracteres especiales en strings ICS
  */
