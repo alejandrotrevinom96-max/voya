@@ -7,6 +7,7 @@ import { updateTrip } from "@/app/trip/actions";
 import { INTEREST_OPTIONS, TRIP_TYPE_OPTIONS, type TripType } from "@/types";
 import type { Trip } from "@/types";
 import ChipsInput from "@/components/ui/ChipsInput";
+import NumberStepper from "@/components/ui/NumberStepper";
 
 interface EditTripFormProps {
   trip: Trip;
@@ -64,8 +65,25 @@ export default function EditTripForm({ trip }: EditTripFormProps) {
     router.refresh();
   }
 
+  // Prevenir Enter accidentalmente submitiendo el form
+  function handleFormKeyDown(e: React.KeyboardEvent<HTMLFormElement>) {
+    const target = e.target as HTMLElement;
+    if (e.key === "Enter" && target.tagName !== "TEXTAREA") {
+      const isSubmitButton =
+        target.tagName === "BUTTON" &&
+        (target as HTMLButtonElement).type === "submit";
+      if (!isSubmitButton) {
+        e.preventDefault();
+      }
+    }
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form
+      onSubmit={handleSubmit}
+      onKeyDown={handleFormKeyDown}
+      className="space-y-8"
+    >
       <div>
         <h2 className="font-display text-3xl font-light text-brown-dark mb-2">
           Editar <span className="italic text-terracotta">viaje</span>
@@ -187,14 +205,12 @@ export default function EditTripForm({ trip }: EditTripFormProps) {
             <label className="block text-sm font-medium mb-2 text-brown-mid">
               Viajeros
             </label>
-            <input
-              type="number"
+            <NumberStepper
               value={travelers}
-              onChange={(e) =>
-                setTravelers(Math.max(1, parseInt(e.target.value) || 1))
-              }
+              onChange={setTravelers}
               min={1}
-              className="input-base"
+              max={50}
+              label="viajeros"
             />
           </div>
           <div>

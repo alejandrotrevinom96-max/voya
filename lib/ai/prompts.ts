@@ -23,29 +23,81 @@ REGLAS CRÍTICAS:
 9. NO incluyas hospedaje, vuelos, ni transporte (eso lo cubre el usuario aparte).
 10. NO uses comillas dobles dentro de los strings JSON (usa comillas simples o reescribe).
 
-ADAPTACIÓN AL TIPO DE VIAJE:
-Si el usuario especifica un tipo de viaje, AJUSTA tus recomendaciones:
-- "romantic": atmósferas íntimas, lugares con vista, restaurantes con ambiente especial, evita lugares ruidosos o muy familiares.
-- "family": actividades aptas para niños, lugares con horarios accesibles, restaurantes con menú variado, evita nightlife.
-- "adventure": deportes outdoor, hiking, actividades de adrenalina, naturaleza activa.
-- "low-cost": prioriza opciones gratuitas o económicas, mercados locales, transporte público, free walking tours.
-- "luxury": restaurantes premium, experiencias exclusivas, hoteles boutique, tours privados.
-- "business": almuerzos rápidos cerca de centros de negocios, actividades de 1-2 horas para tiempo libre.
-- "solo": espacios sociales para conocer gente, hostels con eventos, cafés para trabajar, lugares seguros.
+═══════════════════════════════════════════════════════════
+TIPO DE VIAJE: REGLA OBLIGATORIA (NO opcional)
+═══════════════════════════════════════════════════════════
 
-CIUDADES MÚLTIPLES:
-Si el usuario lista varias ciudades, distribuye las actividades por ciudad de forma equilibrada. Cada actividad debe especificar claramente en su location_name la ciudad correspondiente (ej: "Centro Histórico, Cusco" no solo "Centro Histórico").
+Cuando el usuario especifica un tipo de viaje, ESTE ES EL FILTRO PRINCIPAL.
+TODAS las recomendaciones deben encajar con este tipo. Si una actividad genial
+del destino NO encaja con el tipo de viaje, NO la incluyas.
+
+Reglas estrictas por tipo:
+
+▸ "romantic":
+  - PRIORIDAD: atmósferas íntimas, lugares con vista, ambientes para parejas
+  - INCLUIR: restaurantes con ambiente especial, miradores, paseos al atardecer,
+    spas para parejas, viñedos, terrazas, experiencias gastronómicas íntimas
+  - EVITAR: lugares con multitudes, zonas familiares ruidosas, actividades grupales
+  - En 'notes' menciona por qué es romántico (ej: "Ideal para aniversarios")
+
+▸ "family":
+  - PRIORIDAD: actividades para todas las edades, especialmente con niños
+  - INCLUIR: parques temáticos, museos interactivos, zoológicos, playas seguras,
+    restaurantes familiares con menú de niños, talleres educativos
+  - EVITAR: nightlife, bares, lugares 18+, actividades de adrenalina extrema,
+    restaurantes solo para adultos
+  - En 'notes' especifica si es apto para niños y rangos de edad
+
+▸ "adventure":
+  - PRIORIDAD: deportes outdoor, adrenalina, naturaleza activa
+  - INCLUIR: senderismo, kayak, escalada, ciclismo, surf, parapente,
+    rapel, tirolesa, exploración de cuevas, tours de aventura
+  - EVITAR: museos pasivos, shopping, spa, lugares solo para sentarse
+  - En 'notes' menciona nivel de dificultad y equipo necesario
+
+▸ "low-cost":
+  - PRIORIDAD: maximizar experiencia con presupuesto ajustado
+  - INCLUIR: lugares gratis (price 0), mercados locales, free walking tours,
+    parques públicos, puestos de comida callejera, museos con días gratis
+  - EVITAR: restaurantes premium, tours guiados caros, experiencias exclusivas
+  - PRECIO: la mayoría debe estar en 0 o muy bajo. Si no, omitir.
+
+▸ "luxury":
+  - PRIORIDAD: experiencias premium y exclusivas
+  - INCLUIR: restaurantes con estrellas, hoteles boutique, tours privados,
+    experiencias VIP, spas premium, helicópteros, yates
+  - EVITAR: opciones budget, fast food, atracciones masivas
+  - PRECIO: pueden y deben ser altos. Refleja el premium.
+
+▸ "business":
+  - PRIORIDAD: actividades cortas (1-2h) cerca de zonas de negocios
+  - INCLUIR: restaurantes para almuerzo de negocios, cafés con wifi,
+    bares de hotel, gimnasios, spas express, museos con visitas rápidas
+  - EVITAR: actividades de día completo, tours largos, lugares lejanos
+  - DURACIÓN: máximo 120 minutos por actividad
+
+▸ "solo":
+  - PRIORIDAD: espacios sociales seguros para conocer gente o disfrutar solx
+  - INCLUIR: hostels con eventos, cafés con buena vibe para trabajar,
+    free walking tours grupales, bares amistosos, experiencias culturales,
+    yoga grupal, clases de cocina
+  - EVITAR: restaurantes románticos solo para parejas, lugares aislados,
+    zonas con problemas de seguridad
+  - En 'notes' indica si es seguro y/o social
+
+═══════════════════════════════════════════════════════════
+CIUDADES MÚLTIPLES
+═══════════════════════════════════════════════════════════
+Si el usuario lista varias ciudades, distribuye las actividades de forma equilibrada
+entre ellas. Cada actividad debe especificar claramente en su location_name la
+ciudad correspondiente (ej: "Centro Histórico, Cusco" no solo "Centro Histórico").
+
+═══════════════════════════════════════════════════════════
+FORMATO DE RESPUESTA
+═══════════════════════════════════════════════════════════
 
 CATEGORÍAS PERMITIDAS (usa exactamente estos valores):
-- restaurant
-- museum
-- tour
-- nature
-- nightlife
-- shopping
-- beach
-- culture
-- other
+restaurant, museum, tour, nature, nightlife, shopping, beach, culture, other
 
 RESPONDE SIEMPRE EN JSON VÁLIDO con esta estructura exacta:
 
@@ -60,7 +112,7 @@ RESPONDE SIEMPRE EN JSON VÁLIDO con esta estructura exacta:
       "estimated_duration_minutes": 90,
       "location_name": "Zona, Ciudad",
       "ai_confidence": "high",
-      "notes": "Tip útil opcional (max 150 caracteres)."
+      "notes": "Tip útil opcional (max 150 caracteres). Si aplica, menciona por qué encaja con el tipo de viaje."
     }
   ]
 }
@@ -93,8 +145,9 @@ export function buildUserPrompt(trip: Trip): string {
     ? `\n- Intereses específicos: ${interestLabels}`
     : "";
 
+  // Tipo de viaje: ahora es MUY explícito y va arriba como prioridad
   const tripTypeSection = tripTypeOption
-    ? `\n- Tipo de viaje: ${tripTypeOption.label} (${tripTypeOption.description})`
+    ? `\n\n⚠️ TIPO DE VIAJE: ${tripTypeOption.label.toUpperCase()} (${tripTypeOption.description})\nESTE ES EL FILTRO PRINCIPAL. Todas las actividades DEBEN encajar con este estilo.`
     : "";
 
   const citiesSection = trip.cities && trip.cities.length > 0
@@ -105,6 +158,10 @@ export function buildUserPrompt(trip: Trip): string {
 
   const distributionNote = trip.cities && trip.cities.length > 1
     ? `\n\nIMPORTANTE: Distribuye las actividades de forma equilibrada entre las ${trip.cities.length} ciudades. Cada location_name debe especificar la ciudad.`
+    : "";
+
+  const tripTypeReminder = tripTypeOption
+    ? `\n\nRECUERDA: TIPO DE VIAJE = ${tripTypeOption.label.toUpperCase()}. Filtra TODAS tus recomendaciones por este criterio. Si una actividad popular del destino no encaja con este tipo, NO la incluyas.`
     : "";
 
   return `Necesito recomendaciones para mi próximo viaje. Aquí los detalles:
@@ -118,9 +175,8 @@ Por favor sugiéreme entre ${targetCount - 2} y ${targetCount} actividades varia
 - Restaurantes (3-5 opciones de distintos precios y estilos)
 - Atracciones turísticas y culturales relevantes
 - Experiencias únicas del lugar
-- Si tengo intereses o tipo de viaje específicos, dales prioridad
 
-Todos los precios en ${trip.currency}.${distributionNote}`;
+Todos los precios en ${trip.currency}.${distributionNote}${tripTypeReminder}`;
 }
 
 // ============================================

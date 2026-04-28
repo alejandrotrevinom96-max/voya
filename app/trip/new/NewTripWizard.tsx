@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createTrip } from "../actions";
 import { INTEREST_OPTIONS, TRIP_TYPE_OPTIONS, type TripType } from "@/types";
 import { toDateInput } from "@/lib/utils/date";
 import ChipsInput from "@/components/ui/ChipsInput";
+import NumberStepper from "@/components/ui/NumberStepper";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -43,8 +44,29 @@ export default function NewTripWizard() {
     );
   }
 
+  // CRÍTICO: prevenir submit con Enter en cualquier input (excepto textarea o el botón submit final)
+  function handleFormKeyDown(e: KeyboardEvent<HTMLFormElement>) {
+    const target = e.target as HTMLElement;
+    if (e.key === "Enter" && target.tagName !== "TEXTAREA") {
+      // Solo permitir Enter como submit si estamos en el paso 4 Y el target ES el botón submit
+      const isSubmitButton =
+        target.tagName === "BUTTON" &&
+        (target as HTMLButtonElement).type === "submit";
+      if (!isSubmitButton || step !== 4) {
+        e.preventDefault();
+      }
+    }
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+
+    // CRÍTICO: solo submitear si estamos en el paso final
+    // Esto previene cualquier submit accidental por Enter o clicks raros
+    if (step !== 4) {
+      return;
+    }
+
     if (!canSubmit) return;
 
     setError("");
@@ -77,7 +99,7 @@ export default function NewTripWizard() {
   const today = toDateInput(new Date());
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form onSubmit={handleSubmit} onKeyDown={handleFormKeyDown} className="space-y-8">
       {/* Progress indicator */}
       <div className="flex items-center gap-3 mb-8">
         {[1, 2, 3, 4].map((n) => (
@@ -226,15 +248,12 @@ export default function NewTripWizard() {
               <label className="block text-sm font-medium mb-2 text-brown-mid">
                 Número de viajeros
               </label>
-              <input
-                type="number"
+              <NumberStepper
                 value={travelers}
-                onChange={(e) =>
-                  setTravelers(Math.max(1, parseInt(e.target.value) || 1))
-                }
+                onChange={setTravelers}
                 min={1}
                 max={50}
-                className="input-base"
+                label="viajeros"
               />
             </div>
             <div>
