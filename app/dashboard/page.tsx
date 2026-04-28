@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import AppHeader from "@/components/AppHeader";
 import TripCard from "@/components/trip/TripCard";
 import EmptyTrips from "@/components/trip/EmptyTrips";
+import FeedbackTrigger from "@/components/feedback/FeedbackTrigger";
+import { shouldShowFeedbackModal } from "@/app/feedback-actions";
 import type { Trip } from "@/types";
 
 export default async function DashboardPage() {
@@ -12,10 +14,10 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Obtener perfil del usuario
+  // Obtener perfil (incluye is_admin)
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, email")
+    .select("full_name, email, is_admin")
     .eq("id", user!.id)
     .single();
 
@@ -43,6 +45,9 @@ export default async function DashboardPage() {
 
   const firstName = profile?.full_name?.split(" ")[0] || "viajera";
 
+  // Verificar si debemos mostrar modal de feedback
+  const feedbackCheck = await shouldShowFeedbackModal();
+
   return (
     <div className="min-h-screen">
       <AppHeader userEmail={user?.email} />
@@ -51,7 +56,8 @@ export default async function DashboardPage() {
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10">
           <div>
             <h1 className="font-display text-4xl md:text-5xl font-light text-brown-dark mb-2">
-              Hola, {firstName} <span className="italic text-terracotta">✦</span>
+              Hola, {firstName}{" "}
+              <span className="italic text-terracotta">✦</span>
             </h1>
             <p className="text-brown-mid font-light">
               {trips && trips.length > 0
@@ -62,24 +68,35 @@ export default async function DashboardPage() {
             </p>
           </div>
 
-          {trips && trips.length > 0 && (
-            <Link href="/trip/new" className="btn-primary self-start md:self-auto">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+          <div className="flex items-center gap-3 self-start md:self-auto flex-wrap">
+            {profile?.is_admin && (
+              <Link
+                href="/admin/feedback"
+                className="text-sm px-4 py-2 rounded-full bg-cream-warm text-brown-mid hover:bg-sand transition"
+                title="Solo visible para admins"
               >
-                <path d="M5 12h14" />
-                <path d="M12 5v14" />
-              </svg>
-              <span>Nuevo viaje</span>
-            </Link>
-          )}
+                📊 Admin
+              </Link>
+            )}
+            {trips && trips.length > 0 && (
+              <Link href="/trip/new" className="btn-primary">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14" />
+                  <path d="M12 5v14" />
+                </svg>
+                <span>Nuevo viaje</span>
+              </Link>
+            )}
+          </div>
         </div>
 
         {!trips || trips.length === 0 ? (
@@ -92,6 +109,12 @@ export default async function DashboardPage() {
           </div>
         )}
       </main>
+
+      {/* Modal de feedback (solo se muestra si el user cumple las condiciones) */}
+      <FeedbackTrigger
+        shouldShow={feedbackCheck.show}
+        tripId={feedbackCheck.tripId}
+      />
     </div>
   );
 }
