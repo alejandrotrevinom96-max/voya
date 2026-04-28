@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap");
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -19,7 +17,7 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Mejor scrollbar en webkit */
+/* Scrollbar custom */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -36,7 +34,6 @@ body {
   background: #c97b5a;
 }
 
-/* Selection */
 ::selection {
   background-color: #e8b4a0;
   color: #2c1810;
@@ -60,7 +57,7 @@ body {
   }
 }
 
-/* Mejor experiencia táctil en mobile */
+/* Touch targets en mobile */
 @media (max-width: 768px) {
   button, a {
     min-height: 44px;
@@ -68,7 +65,7 @@ body {
   }
 }
 
-/* Reducir motion para usuarios que lo prefieran */
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

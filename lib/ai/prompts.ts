@@ -1,14 +1,9 @@
 import type { Trip } from "@/types";
 import { tripDuration } from "@/lib/utils/date";
-import { INTEREST_OPTIONS } from "@/types";
+import { INTEREST_OPTIONS, TRIP_TYPE_OPTIONS } from "@/types";
 
 /**
  * Construye el prompt de sistema para Claude
- * Diseñado para:
- * - Forzar a Claude a sugerir SOLO lugares conocidos y consolidados
- * - Pedir nivel de confianza explícito en cada recomendación
- * - Estructurar respuesta en JSON válido
- * - Estimar precios realistas en la moneda del viaje
  */
 export function buildSystemPrompt(): string {
   return `Eres un asistente experto en planeación de viajes que conoce bien destinos turísticos del mundo.
@@ -21,12 +16,25 @@ REGLAS CRÍTICAS:
    - "medium": lugar conocido pero podrías tener detalles imprecisos (precios, horarios)
    - "low": tienes dudas razonables — solo úsalo si es necesario completar variedad
 4. PREFIERE alta confianza. Es mejor sugerir 8 lugares "high" que 15 mezclados.
-5. Estima precios REALISTAS basados en el destino y la moneda solicitada. Investiga mentalmente el costo de vida del lugar.
+5. Estima precios REALISTAS basados en el destino y la moneda solicitada.
 6. Para restaurantes, usa el ticket promedio por persona (no por mesa).
 7. Para tours/atracciones, usa el precio de entrada/tour por persona.
 8. Si un lugar es gratis (parques públicos, miradores), pon precio min y max en 0.
 9. NO incluyas hospedaje, vuelos, ni transporte (eso lo cubre el usuario aparte).
 10. NO uses comillas dobles dentro de los strings JSON (usa comillas simples o reescribe).
+
+ADAPTACIÓN AL TIPO DE VIAJE:
+Si el usuario especifica un tipo de viaje, AJUSTA tus recomendaciones:
+- "romantic": atmósferas íntimas, lugares con vista, restaurantes con ambiente especial, evita lugares ruidosos o muy familiares.
+- "family": actividades aptas para niños, lugares con horarios accesibles, restaurantes con menú variado, evita nightlife.
+- "adventure": deportes outdoor, hiking, actividades de adrenalina, naturaleza activa.
+- "low-cost": prioriza opciones gratuitas o económicas, mercados locales, transporte público, free walking tours.
+- "luxury": restaurantes premium, experiencias exclusivas, hoteles boutique, tours privados.
+- "business": almuerzos rápidos cerca de centros de negocios, actividades de 1-2 horas para tiempo libre.
+- "solo": espacios sociales para conocer gente, hostels con eventos, cafés para trabajar, lugares seguros.
+
+CIUDADES MÚLTIPLES:
+Si el usuario lista varias ciudades, distribuye las actividades por ciudad de forma equilibrada. Cada actividad debe especificar claramente en su location_name la ciudad correspondiente (ej: "Centro Histórico, Cusco" no solo "Centro Histórico").
 
 CATEGORÍAS PERMITIDAS (usa exactamente estos valores):
 - restaurant
@@ -50,14 +58,14 @@ RESPONDE SIEMPRE EN JSON VÁLIDO con esta estructura exacta:
       "estimated_price_min": 200,
       "estimated_price_max": 400,
       "estimated_duration_minutes": 90,
-      "location_name": "Zona o barrio del destino",
+      "location_name": "Zona, Ciudad",
       "ai_confidence": "high",
-      "notes": "Tip útil opcional (max 150 caracteres). Ej: 'Reservar con anticipación', 'Ir temprano para evitar fila'"
+      "notes": "Tip útil opcional (max 150 caracteres)."
     }
   ]
 }
 
-NO agregues texto antes o después del JSON. NO uses bloques de markdown (\`\`\`). Devuelve SOLO el objeto JSON.`;
+NO agregues texto antes o después del JSON. NO uses bloques de markdown. Devuelve SOLO el objeto JSON.`;
 }
 
 /**
@@ -66,40 +74,59 @@ NO agregues texto antes o después del JSON. NO uses bloques de markdown (\`\`\`
 export function buildUserPrompt(trip: Trip): string {
   const duration = tripDuration(trip.start_date, trip.end_date);
 
-  // Mapear los intereses a labels legibles
+  // Mapear intereses a labels legibles
   const interestLabels = trip.interests
     .map((val) => INTEREST_OPTIONS.find((o) => o.value === val)?.label || val)
     .filter(Boolean)
     .join(", ");
 
-  // Calcular cuántas actividades sugerir según duración
-  const targetCount = Math.min(15, Math.max(8, duration * 2));
+  // Tipo de viaje legible
+  const tripTypeOption = trip.trip_type
+    ? TRIP_TYPE_OPTIONS.find((o) => o.value === trip.trip_type)
+    : null;
 
+  // Cantidad sugerida de actividades
+  const targetCount = Math.min(20, Math.max(8, duration * 2));
+
+  // Secciones opcionales
   const interestsSection = trip.interests.length > 0
-    ? `\n- Intereses: ${interestLabels}`
+    ? `\n- Intereses específicos: ${interestLabels}`
+    : "";
+
+  const tripTypeSection = tripTypeOption
+    ? `\n- Tipo de viaje: ${tripTypeOption.label} (${tripTypeOption.description})`
+    : "";
+
+  const citiesSection = trip.cities && trip.cities.length > 0
+    ? `\n- Ciudades a visitar: ${trip.cities.join(", ")}`
     : "";
 
   const countryInfo = trip.country ? `, ${trip.country}` : "";
 
+  const distributionNote = trip.cities && trip.cities.length > 1
+    ? `\n\nIMPORTANTE: Distribuye las actividades de forma equilibrada entre las ${trip.cities.length} ciudades. Cada location_name debe especificar la ciudad.`
+    : "";
+
   return `Necesito recomendaciones para mi próximo viaje. Aquí los detalles:
 
-- Destino: ${trip.destination}${countryInfo}
+- Destino: ${trip.destination}${countryInfo}${citiesSection}
 - Duración: ${duration} ${duration === 1 ? "día" : "días"}
 - Viajeros: ${trip.travelers} ${trip.travelers === 1 ? "persona" : "personas"}
-- Moneda: ${trip.currency}${interestsSection}
+- Moneda: ${trip.currency}${tripTypeSection}${interestsSection}
 
-Por favor sugiéreme entre ${targetCount - 2} y ${targetCount} actividades variadas considerando mis intereses y la duración del viaje. Incluye una mezcla de:
+Por favor sugiéreme entre ${targetCount - 2} y ${targetCount} actividades variadas. Incluye una mezcla de:
 - Restaurantes (3-5 opciones de distintos precios y estilos)
-- Atracciones turísticas y culturales relevantes al destino
+- Atracciones turísticas y culturales relevantes
 - Experiencias únicas del lugar
-- Si tengo intereses específicos, dales prioridad
+- Si tengo intereses o tipo de viaje específicos, dales prioridad
 
-Todos los precios en ${trip.currency}.`;
+Todos los precios en ${trip.currency}.${distributionNote}`;
 }
 
-/**
- * Schema de validación para parsear la respuesta de Claude
- */
+// ============================================
+// Validación de respuesta (sin cambios)
+// ============================================
+
 export interface AIActivity {
   name: string;
   category: string;
@@ -128,11 +155,7 @@ const VALID_CATEGORIES = [
   "other",
 ];
 
-/**
- * Valida y limpia la respuesta de Claude
- */
 export function validateAIResponse(text: string): AIResponse {
-  // Limpiar posibles bloques de markdown si Claude los puso
   let cleaned = text.trim();
   cleaned = cleaned.replace(/^```(?:json)?\s*/i, "");
   cleaned = cleaned.replace(/\s*```$/i, "");
@@ -155,7 +178,6 @@ export function validateAIResponse(text: string): AIResponse {
 
   const response = parsed as AIResponse;
 
-  // Filtrar y normalizar cada actividad
   const validActivities: AIActivity[] = [];
 
   for (const act of response.activities) {

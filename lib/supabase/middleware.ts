@@ -2,14 +2,20 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+  let supabaseResponse = NextResponse.next({ request });
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error(
+      "[middleware] Supabase env vars missing — letting request through"
+    );
+    return supabaseResponse;
+  }
+
+  try {
+    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
       cookies: {
         getAll() {
           return request.cookies.getAll();
@@ -24,33 +30,41 @@ export async function updateSession(request: NextRequest) {
           );
         },
       },
+    });
+
+    let user = null;
+    try {
+      const result = await supabase.auth.getUser();
+      user = result.data.user;
+    } catch (err) {
+      console.error("[middleware] supabase.auth.getUser failed:", err);
     }
-  );
 
-  // Refresca la sesión si está expirada
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    // Rutas protegidas: /dashboard, /trip (excepto /trip/new que también es protegida)
+    // /share/* es PÚBLICA (no requiere login)
+    const protectedRoutes = ["/dashboard", "/trip"];
+    const pathname = request.nextUrl.pathname;
+    const isProtected = protectedRoutes.some((route) =>
+      pathname.startsWith(route)
+    );
 
-  // Rutas protegidas: redirigir a login si no hay user
-  const protectedRoutes = ["/dashboard", "/trip"];
-  const isProtected = protectedRoutes.some((route) =>
-    request.nextUrl.pathname.startsWith(route)
-  );
+    if (isProtected && !user) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/auth/login";
+      url.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(url);
+    }
 
-  if (isProtected && !user) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/auth/login";
-    url.searchParams.set("redirect", request.nextUrl.pathname);
-    return NextResponse.redirect(url);
+    // Si el user ya está logueado y va a /auth/*, mandarlo al dashboard
+    if (user && pathname.startsWith("/auth/")) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
+
+    return supabaseResponse;
+  } catch (err) {
+    console.error("[middleware] unexpected error:", err);
+    return supabaseResponse;
   }
-
-  // Si el user ya está logueado y va a /auth/*, mandarlo al dashboard
-  if (user && request.nextUrl.pathname.startsWith("/auth/")) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
-    return NextResponse.redirect(url);
-  }
-
-  return supabaseResponse;
 }

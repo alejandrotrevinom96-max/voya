@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppHeader from "@/components/AppHeader";
 import DeleteTripButton from "@/components/trip/DeleteTripButton";
+import ShareTripButton from "@/components/trip/ShareTripButton";
 import GenerateActivitiesButton from "@/components/activity/GenerateActivitiesButton";
 import ActivitiesList from "@/components/activity/ActivitiesList";
 import BudgetSummary from "@/components/activity/BudgetSummary";
@@ -14,7 +15,7 @@ import {
   daysUntilTrip,
 } from "@/lib/utils/date";
 import { getTripDays } from "@/lib/utils/calendar";
-import { INTEREST_OPTIONS } from "@/types";
+import { INTEREST_OPTIONS, TRIP_TYPE_OPTIONS } from "@/types";
 
 interface TripPageProps {
   params: { id: string };
@@ -38,7 +39,6 @@ export default async function TripPage({ params }: TripPageProps) {
     notFound();
   }
 
-  // Cargar actividades + schedule
   const [activitiesRes, scheduleRes] = await Promise.all([
     supabase
       .from("activities")
@@ -56,9 +56,7 @@ export default async function TripPage({ params }: TripPageProps) {
   const scheduleItems = scheduleRes.data || [];
   const hasActivities = allActivities.length > 0;
 
-  // Generar días del viaje
   const tripDays = getTripDays(trip.start_date, trip.end_date);
-
   const status = getTripStatus(trip.start_date, trip.end_date);
   const duration = tripDuration(trip.start_date, trip.end_date);
   const days = daysUntilTrip(trip.start_date);
@@ -69,6 +67,10 @@ export default async function TripPage({ params }: TripPageProps) {
         INTEREST_OPTIONS.find((o) => o.value === val)?.label || val
     )
     .filter(Boolean);
+
+  const tripTypeOption = trip.trip_type
+    ? TRIP_TYPE_OPTIONS.find((o) => o.value === trip.trip_type)
+    : null;
 
   return (
     <div className="min-h-screen">
@@ -99,12 +101,19 @@ export default async function TripPage({ params }: TripPageProps) {
                 </p>
               </div>
             </div>
-            <Link
-              href={`/trip/${trip.id}/edit`}
-              className="btn-secondary text-sm self-start"
-            >
-              Editar
-            </Link>
+            <div className="flex items-center gap-2 self-start flex-wrap">
+              <ShareTripButton
+                tripId={trip.id}
+                shareToken={trip.share_token}
+                isShareEnabled={trip.is_share_enabled}
+              />
+              <Link
+                href={`/trip/${trip.id}/edit`}
+                className="btn-secondary text-sm"
+              >
+                Editar
+              </Link>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 border-t border-border">
@@ -147,6 +156,36 @@ export default async function TripPage({ params }: TripPageProps) {
             </div>
           </div>
 
+          {trip.cities && trip.cities.length > 0 && (
+            <div className="mt-6 pt-6 border-t border-border">
+              <p className="text-xs uppercase tracking-wider text-brown-soft mb-3">
+                Ciudades a visitar
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {trip.cities.map((city: string) => (
+                  <span
+                    key={city}
+                    className="px-3 py-1 rounded-full bg-cream-warm text-sm text-brown-mid"
+                  >
+                    📍 {city}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {tripTypeOption && (
+            <div className="mt-6 pt-6 border-t border-border">
+              <p className="text-xs uppercase tracking-wider text-brown-soft mb-3">
+                Tipo de viaje
+              </p>
+              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cream-warm text-sm text-brown-mid">
+                <span className="text-lg">{tripTypeOption.emoji}</span>
+                {tripTypeOption.label}
+              </span>
+            </div>
+          )}
+
           {interestLabels.length > 0 && (
             <div className="mt-6 pt-6 border-t border-border">
               <p className="text-xs uppercase tracking-wider text-brown-soft mb-3">
@@ -166,7 +205,6 @@ export default async function TripPage({ params }: TripPageProps) {
           )}
         </div>
 
-        {/* Sección de actividades + presupuesto */}
         {!hasActivities ? (
           <div className="card-base text-center py-16">
             <div className="text-6xl mb-6">✨</div>
@@ -226,7 +264,6 @@ export default async function TripPage({ params }: TripPageProps) {
               </aside>
             </div>
 
-            {/* CALENDARIO */}
             <div className="border-t border-sand-dark pt-12">
               <CalendarView
                 days={tripDays}
@@ -240,7 +277,6 @@ export default async function TripPage({ params }: TripPageProps) {
           </>
         )}
 
-        {/* Zona de peligro */}
         <div className="mt-12 pt-8 border-t border-sand-dark">
           <DeleteTripButton tripId={trip.id} tripName={trip.name} />
         </div>

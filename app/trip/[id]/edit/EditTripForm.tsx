@@ -4,8 +4,9 @@ import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { updateTrip } from "@/app/trip/actions";
-import { INTEREST_OPTIONS } from "@/types";
+import { INTEREST_OPTIONS, TRIP_TYPE_OPTIONS, type TripType } from "@/types";
 import type { Trip } from "@/types";
+import ChipsInput from "@/components/ui/ChipsInput";
 
 interface EditTripFormProps {
   trip: Trip;
@@ -19,6 +20,8 @@ export default function EditTripForm({ trip }: EditTripFormProps) {
   const [name, setName] = useState(trip.name);
   const [destination, setDestination] = useState(trip.destination);
   const [country, setCountry] = useState(trip.country || "");
+  const [cities, setCities] = useState<string[]>(trip.cities || []);
+  const [tripType, setTripType] = useState<TripType | null>(trip.trip_type);
   const [startDate, setStartDate] = useState(trip.start_date);
   const [endDate, setEndDate] = useState(trip.end_date);
   const [travelers, setTravelers] = useState(trip.travelers);
@@ -41,6 +44,8 @@ export default function EditTripForm({ trip }: EditTripFormProps) {
       name,
       destination,
       country: country || undefined,
+      cities,
+      trip_type: tripType,
       start_date: startDate,
       end_date: endDate,
       travelers,
@@ -109,6 +114,48 @@ export default function EditTripForm({ trip }: EditTripFormProps) {
           </div>
         </div>
 
+        <div>
+          <label className="block text-sm font-medium mb-2 text-brown-mid">
+            Ciudades a visitar
+          </label>
+          <ChipsInput
+            values={cities}
+            onChange={setCities}
+            placeholder="Agregar ciudad..."
+            maxItems={10}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-3 text-brown-mid">
+            Tipo de viaje
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {TRIP_TYPE_OPTIONS.map((option) => {
+              const selected = tripType === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() =>
+                    setTripType(selected ? null : option.value)
+                  }
+                  className={`p-3 rounded-2xl border-2 text-left transition ${
+                    selected
+                      ? "border-terracotta bg-cream-warm"
+                      : "border-sand-dark bg-white hover:border-terracotta-soft"
+                  }`}
+                >
+                  <span className="text-lg mr-2">{option.emoji}</span>
+                  <span className="text-sm text-brown-dark">
+                    {option.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-2 text-brown-mid">
@@ -143,7 +190,9 @@ export default function EditTripForm({ trip }: EditTripFormProps) {
             <input
               type="number"
               value={travelers}
-              onChange={(e) => setTravelers(Math.max(1, parseInt(e.target.value) || 1))}
+              onChange={(e) =>
+                setTravelers(Math.max(1, parseInt(e.target.value) || 1))
+              }
               min={1}
               className="input-base"
             />
@@ -189,7 +238,9 @@ export default function EditTripForm({ trip }: EditTripFormProps) {
                   }`}
                 >
                   <span className="text-lg mr-2">{option.emoji}</span>
-                  <span className="text-sm text-brown-dark">{option.label}</span>
+                  <span className="text-sm text-brown-dark">
+                    {option.label}
+                  </span>
                 </button>
               );
             })}
@@ -198,7 +249,8 @@ export default function EditTripForm({ trip }: EditTripFormProps) {
 
         <div>
           <label className="block text-sm font-medium mb-2 text-brown-mid">
-            Notas <span className="text-brown-soft text-xs">(opcional)</span>
+            Notas{" "}
+            <span className="text-brown-soft text-xs">(opcional)</span>
           </label>
           <textarea
             value={notes}

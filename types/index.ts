@@ -23,19 +23,32 @@ export type ActivityCategory =
 
 export type AIConfidence = "high" | "medium" | "low";
 
+export type TripType =
+  | "romantic"
+  | "family"
+  | "adventure"
+  | "low-cost"
+  | "luxury"
+  | "business"
+  | "solo";
+
 export interface Trip {
   id: string;
   user_id: string;
   name: string;
   destination: string;
   country: string | null;
-  start_date: string; // ISO date
+  cities: string[];
+  trip_type: TripType | null;
+  start_date: string;
   end_date: string;
   travelers: number;
   interests: string[];
   currency: string;
   emoji: string;
   notes: string | null;
+  share_token: string | null;
+  is_share_enabled: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -67,7 +80,7 @@ export interface ScheduleItem {
 }
 
 // ============================================
-// Tipos de UI
+// Opciones de UI
 // ============================================
 
 export const INTEREST_OPTIONS = [
@@ -83,7 +96,55 @@ export const INTEREST_OPTIONS = [
   { value: "wellness", label: "Wellness y spa", emoji: "🧘" },
 ] as const;
 
-export const CATEGORY_LABELS: Record<ActivityCategory, { label: string; emoji: string }> = {
+export const TRIP_TYPE_OPTIONS = [
+  {
+    value: "romantic" as const,
+    label: "Romántico",
+    emoji: "💕",
+    description: "Viaje en pareja, atmósferas íntimas",
+  },
+  {
+    value: "family" as const,
+    label: "Familiar",
+    emoji: "👨‍👩‍👧",
+    description: "Actividades aptas para todas las edades",
+  },
+  {
+    value: "adventure" as const,
+    label: "Aventura",
+    emoji: "🧗",
+    description: "Adrenalina, deportes, naturaleza extrema",
+  },
+  {
+    value: "low-cost" as const,
+    label: "Low-cost",
+    emoji: "💰",
+    description: "Maximizar experiencia con presupuesto ajustado",
+  },
+  {
+    value: "luxury" as const,
+    label: "Lujo",
+    emoji: "✨",
+    description: "Experiencias premium sin restricciones",
+  },
+  {
+    value: "business" as const,
+    label: "Negocios",
+    emoji: "💼",
+    description: "Viaje de trabajo con tiempo libre limitado",
+  },
+  {
+    value: "solo" as const,
+    label: "Solo travel",
+    emoji: "🎒",
+    description: "Viajando solx, énfasis en seguridad y conexiones",
+  },
+] as const;
+
+export const CATEGORY_LABELS: Record<
+  ActivityCategory,
+  { label: string; emoji: string }
+> = {
   restaurant: { label: "Restaurante", emoji: "🍽️" },
   museum: { label: "Museo", emoji: "🏛️" },
   tour: { label: "Tour", emoji: "🎫" },
