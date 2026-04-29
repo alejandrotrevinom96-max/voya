@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useRef } from "react";
 import type { Activity, ActivityCategory, ScheduleItem } from "@/types";
 import type { TripDay } from "@/lib/utils/calendar";
 import { CATEGORY_LABELS } from "@/types";
 import ActivityCard from "./ActivityCard";
-import FirstActivityFeedbackTrigger from "@/components/feedback/FirstActivityFeedbackTrigger";
+import FeedbackModal from "@/components/feedback/FeedbackModal";
 
 interface ActivitiesListProps {
   activities: Activity[];
@@ -29,10 +29,35 @@ export default function ActivitiesList({
 }: ActivitiesListProps) {
   const [filter, setFilter] = useState<Filter>("all");
 
-  // Snapshot del addedCount cuando montamos (para saber si el user llega con 0 o ya tenía algunas)
-  const [initialAddedCount] = useState(
-    () => activities.filter((a) => a.is_added).length
+  // Estado del modal de feedback
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+
+  // Snapshot del addedCount al cargar la página.
+  // Si era 0, la próxima activación será la "1ra".
+  const initialAddedCountRef = useRef(
+    activities.filter((a) => a.is_added).length
   );
+
+  // Flag: ya disparamos el modal en esta sesión (para no abrirlo doble)
+  const triggeredRef = useRef(false);
+
+  /**
+   * Callback que ActivityCard invoca DESPUÉS de un toggle exitoso a "agregada".
+   * Si era la 1ra del usuario en este viaje (snapshot inicial = 0) y aún no
+   * dispara, abre el modal de feedback con 800ms de delay.
+   */
+  function handleActivityAdded() {
+    if (
+      shouldShowFeedback &&
+      initialAddedCountRef.current === 0 &&
+      !triggeredRef.current
+    ) {
+      triggeredRef.current = true;
+      setTimeout(() => {
+        setFeedbackOpen(true);
+      }, 800);
+    }
+  }
 
   // Map de scheduleItems por activity_id
   const scheduleByActivity = useMemo(() => {
@@ -55,7 +80,6 @@ export default function ActivitiesList({
     return activities.filter((a) => a.category === filter);
   }, [activities, filter, scheduleByActivity]);
 
-  // Conteo actual (cambia cada vez que `activities` se actualiza vía router.refresh)
   const currentAddedCount = activities.filter((a) => a.is_added).length;
   const scheduledCount = scheduleByActivity.size;
 
@@ -132,18 +156,20 @@ export default function ActivitiesList({
               tripId={tripId}
               scheduleItem={scheduleByActivity.get(activity.id)}
               tripDays={tripDays}
+              onActivityAdded={handleActivityAdded}
             />
           ))}
         </div>
       )}
 
-      {/* Trigger de feedback para la 1ra actividad agregada */}
-      <FirstActivityFeedbackTrigger
-        tripId={tripId}
-        initialAddedCount={initialAddedCount}
-        shouldEverShow={shouldShowFeedback}
-        triggerCount={currentAddedCount}
-      />
+      {/* Modal de feedback: se abre directamente cuando el usuario agrega su 1ra actividad */}
+      {feedbackOpen && (
+        <FeedbackModal
+          tripId={tripId}
+          onClose={() => setFeedbackOpen(false)}
+          onSubmitted={() => setFeedbackOpen(false)}
+        />
+      )}
     </div>
   );
 }

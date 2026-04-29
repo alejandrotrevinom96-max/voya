@@ -19,6 +19,11 @@ interface ActivityCardProps {
   tripId: string;
   scheduleItem?: ScheduleItem;
   tripDays: TripDay[];
+  /**
+   * Callback que se dispara DESPUÉS de un toggle exitoso a "agregada".
+   * El padre decide si esa fue la 1ra y si abre modal de feedback.
+   */
+  onActivityAdded?: () => void;
 }
 
 export default function ActivityCard({
@@ -27,6 +32,7 @@ export default function ActivityCard({
   tripId,
   scheduleItem,
   tripDays,
+  onActivityAdded,
 }: ActivityCardProps) {
   const [isPending, startTransition] = useTransition();
   const [showMenu, setShowMenu] = useState(false);
@@ -61,6 +67,11 @@ export default function ActivityCard({
         showToast(result.error, "error");
       } else if (result?.is_added) {
         showToast(`"${activity.name}" agregada al plan`, "success");
+        // CRÍTICO: notificar al padre que esta actividad fue agregada
+        // El padre decide si fue la 1ra del usuario y abre el modal
+        if (onActivityAdded) {
+          onActivityAdded();
+        }
       }
     });
   }
