@@ -3,8 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 import AppHeader from "@/components/AppHeader";
 import TripCard from "@/components/trip/TripCard";
 import EmptyTrips from "@/components/trip/EmptyTrips";
-import FeedbackTrigger from "@/components/feedback/FeedbackTrigger";
-import { shouldShowFeedbackModal } from "@/app/feedback-actions";
 import type { Trip } from "@/types";
 
 export default async function DashboardPage() {
@@ -44,9 +42,6 @@ export default async function DashboardPage() {
   }
 
   const firstName = profile?.full_name?.split(" ")[0] || "viajera";
-
-  // Verificar si debemos mostrar modal de feedback
-  const feedbackCheck = await shouldShowFeedbackModal();
 
   return (
     <div className="min-h-screen">
@@ -109,12 +104,6 @@ export default async function DashboardPage() {
           </div>
         )}
       </main>
-
-      {/* Modal de feedback (solo se muestra si el user cumple las condiciones) */}
-      <FeedbackTrigger
-        shouldShow={feedbackCheck.show}
-        tripId={feedbackCheck.tripId}
-      />
     </div>
   );
 }

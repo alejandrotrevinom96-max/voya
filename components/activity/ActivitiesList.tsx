@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import type { Activity, ActivityCategory, ScheduleItem } from "@/types";
 import type { TripDay } from "@/lib/utils/calendar";
 import { CATEGORY_LABELS } from "@/types";
 import ActivityCard from "./ActivityCard";
+import FirstActivityFeedbackTrigger from "@/components/feedback/FirstActivityFeedbackTrigger";
 
 interface ActivitiesListProps {
   activities: Activity[];
@@ -12,6 +13,8 @@ interface ActivitiesListProps {
   tripDays: TripDay[];
   currency: string;
   tripId: string;
+  /** Si el server determinó que este user puede ver el modal de feedback */
+  shouldShowFeedback: boolean;
 }
 
 type Filter = "all" | "added" | "scheduled" | ActivityCategory;
@@ -22,8 +25,14 @@ export default function ActivitiesList({
   tripDays,
   currency,
   tripId,
+  shouldShowFeedback,
 }: ActivitiesListProps) {
   const [filter, setFilter] = useState<Filter>("all");
+
+  // Snapshot del addedCount cuando montamos (para saber si el user llega con 0 o ya tenía algunas)
+  const [initialAddedCount] = useState(
+    () => activities.filter((a) => a.is_added).length
+  );
 
   // Map de scheduleItems por activity_id
   const scheduleByActivity = useMemo(() => {
@@ -46,7 +55,8 @@ export default function ActivitiesList({
     return activities.filter((a) => a.category === filter);
   }, [activities, filter, scheduleByActivity]);
 
-  const addedCount = activities.filter((a) => a.is_added).length;
+  // Conteo actual (cambia cada vez que `activities` se actualiza vía router.refresh)
+  const currentAddedCount = activities.filter((a) => a.is_added).length;
   const scheduledCount = scheduleByActivity.size;
 
   return (
@@ -63,7 +73,7 @@ export default function ActivitiesList({
           Todas ({activities.length})
         </button>
 
-        {addedCount > 0 && (
+        {currentAddedCount > 0 && (
           <button
             onClick={() => setFilter("added")}
             className={`text-sm px-4 py-2 rounded-full transition ${
@@ -72,7 +82,7 @@ export default function ActivitiesList({
                 : "bg-white border border-sand-dark text-brown-mid hover:bg-cream-warm"
             }`}
           >
-            ✓ En plan ({addedCount})
+            ✓ En plan ({currentAddedCount})
           </button>
         )}
 
@@ -126,6 +136,14 @@ export default function ActivitiesList({
           ))}
         </div>
       )}
+
+      {/* Trigger de feedback para la 1ra actividad agregada */}
+      <FirstActivityFeedbackTrigger
+        tripId={tripId}
+        initialAddedCount={initialAddedCount}
+        shouldEverShow={shouldShowFeedback}
+        triggerCount={currentAddedCount}
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import type { TripDay } from "@/lib/utils/calendar";
 import { formatCurrency } from "@/lib/utils/date";
 import ScheduledActivity from "./ScheduledActivity";
 import ExportCalendarButton from "./ExportCalendarButton";
+import AutoScheduleButton from "./AutoScheduleButton";
 
 interface CalendarViewProps {
   days: TripDay[];
@@ -33,14 +34,11 @@ export default function CalendarView({
   // Ordenar cada día por order_index (y por hora si la tienen)
   scheduleByDay.forEach((items) => {
     items.sort((a, b) => {
-      // Si ambos tienen hora, ordenar por hora
       if (a.start_time && b.start_time) {
         return a.start_time.localeCompare(b.start_time);
       }
-      // Si solo uno tiene hora, ese va primero
       if (a.start_time) return -1;
       if (b.start_time) return 1;
-      // Si ninguno tiene hora, ordenar por order_index
       return a.order_index - b.order_index;
     });
   });
@@ -48,8 +46,14 @@ export default function CalendarView({
   // Map de actividades por id para búsqueda rápida
   const activitiesById = new Map(activities.map((a) => [a.id, a]));
 
-  // Calcular presupuesto total programado
+  // Contar actividades agregadas pero NO agendadas (las que se pueden auto-agendar)
   const scheduledActivityIds = new Set(scheduleItems.map((s) => s.activity_id));
+  const addedActivities = activities.filter((a) => a.is_added);
+  const unscheduledCount = addedActivities.filter(
+    (a) => !scheduledActivityIds.has(a.id)
+  ).length;
+
+  // Calcular presupuesto total programado
   const totalMin = activities
     .filter((a) => scheduledActivityIds.has(a.id))
     .reduce((sum, a) => sum + (a.estimated_price_min || 0), 0);
@@ -62,21 +66,48 @@ export default function CalendarView({
   return (
     <div>
       {/* Header del calendario */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
-        <div>
-          <h2 className="font-display text-2xl md:text-3xl font-light text-brown-dark mb-1">
-            Tu <span className="italic text-terracotta">itinerario</span>
-          </h2>
-          <p className="text-sm text-brown-mid">
-            {hasAnyScheduled
-              ? `${scheduleItems.length} ${
-                  scheduleItems.length === 1 ? "actividad" : "actividades"
-                } programadas en ${days.length} días`
-              : "Asigna actividades a cada día desde la sección de arriba"}
-          </p>
+      <div className="flex flex-col gap-6 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <h2 className="font-display text-2xl md:text-3xl font-light text-brown-dark mb-1">
+              Tu <span className="italic text-terracotta">itinerario</span>
+            </h2>
+            <p className="text-sm text-brown-mid">
+              {hasAnyScheduled
+                ? `${scheduleItems.length} ${
+                    scheduleItems.length === 1 ? "actividad" : "actividades"
+                  } programadas en ${days.length} días`
+                : unscheduledCount > 0
+                ? `${unscheduledCount} ${
+                    unscheduledCount === 1 ? "actividad" : "actividades"
+                  } por agendar`
+                : "Sin actividades agendadas todavía"}
+            </p>
+          </div>
+          {hasAnyScheduled && (
+            <ExportCalendarButton tripId={tripId} tripName={tripName} />
+          )}
         </div>
-        {hasAnyScheduled && (
-          <ExportCalendarButton tripId={tripId} tripName={tripName} />
+
+        {/* Botón Auto-agendar (solo si hay actividades sin agendar) */}
+        {unscheduledCount > 0 && (
+          <div className="card-base bg-cream-warm border-terracotta-soft">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex-1">
+                <h3 className="font-display text-lg font-medium text-brown-dark mb-1">
+                  ✨ Deja que la AI organice tu viaje
+                </h3>
+                <p className="text-sm text-brown-mid font-light">
+                  Distribuye automáticamente tus actividades por día y hora,
+                  considerando tu tipo de viaje y agrupando por zona.
+                </p>
+              </div>
+              <AutoScheduleButton
+                tripId={tripId}
+                unscheduledCount={unscheduledCount}
+              />
+            </div>
+          </div>
         )}
       </div>
 

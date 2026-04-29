@@ -56,6 +56,25 @@ export default async function TripPage({ params }: TripPageProps) {
   const scheduleItems = scheduleRes.data || [];
   const hasActivities = allActivities.length > 0;
 
+  // Verificar si el user puede ver el modal de feedback
+  // Reglas: no ha respondido feedback antes, no ha dismisseado
+  const [feedbackCheck, dismissalCheck] = await Promise.all([
+    supabase
+      .from("feedback")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user!.id),
+    supabase
+      .from("feedback_dismissals")
+      .select("user_id")
+      .eq("user_id", user!.id)
+      .eq("source", "first-trip-modal")
+      .maybeSingle(),
+  ]);
+
+  const hasResponded = (feedbackCheck.count || 0) > 0;
+  const hasDismissed = !!dismissalCheck.data;
+  const shouldShowFeedback = !hasResponded && !hasDismissed;
+
   const tripDays = getTripDays(trip.start_date, trip.end_date);
   const status = getTripStatus(trip.start_date, trip.end_date);
   const duration = tripDuration(trip.start_date, trip.end_date);
@@ -252,6 +271,7 @@ export default async function TripPage({ params }: TripPageProps) {
                   tripDays={tripDays}
                   currency={trip.currency}
                   tripId={trip.id}
+                  shouldShowFeedback={shouldShowFeedback}
                 />
               </div>
 
