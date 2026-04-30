@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import AppHeader from "@/components/AppHeader";
 import DeleteTripButton from "@/components/trip/DeleteTripButton";
 import ShareTripButton from "@/components/trip/ShareTripButton";
+import InviteShareButton from "@/components/voting/InviteShareButton";
+import VotingResults from "@/components/voting/VotingResults";
 import GenerateActivitiesButton from "@/components/activity/GenerateActivitiesButton";
 import ActivitiesList from "@/components/activity/ActivitiesList";
 import BudgetSummary from "@/components/activity/BudgetSummary";
@@ -27,6 +29,8 @@ export default async function TripPage({ params }: TripPageProps) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  console.log("[TripPage] User:", user?.id, user?.email);
 
   const { data: trip } = await supabase
     .from("trips")
@@ -56,8 +60,7 @@ export default async function TripPage({ params }: TripPageProps) {
   const scheduleItems = scheduleRes.data || [];
   const hasActivities = allActivities.length > 0;
 
-  // Verificar si el user puede ver el modal de feedback
-  // Reglas: no ha respondido feedback antes, no ha dismisseado
+  // DEBUG: ver qué hay en la DB para este user
   const [feedbackCheck, dismissalCheck] = await Promise.all([
     supabase
       .from("feedback")
@@ -74,6 +77,16 @@ export default async function TripPage({ params }: TripPageProps) {
   const hasResponded = (feedbackCheck.count || 0) > 0;
   const hasDismissed = !!dismissalCheck.data;
   const shouldShowFeedback = !hasResponded && !hasDismissed;
+
+  console.log("[TripPage] Feedback check:", {
+    userId: user?.id,
+    feedbackCount: feedbackCheck.count,
+    feedbackError: feedbackCheck.error?.message,
+    hasResponded,
+    hasDismissed,
+    shouldShowFeedback,
+    addedActivitiesNow: allActivities.filter((a) => a.is_added).length,
+  });
 
   const tripDays = getTripDays(trip.start_date, trip.end_date);
   const status = getTripStatus(trip.start_date, trip.end_date);
@@ -103,7 +116,6 @@ export default async function TripPage({ params }: TripPageProps) {
           ← Volver al dashboard
         </Link>
 
-        {/* Header del viaje */}
         <div className="card-base mb-8">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
             <div className="flex items-center gap-4">
@@ -125,6 +137,12 @@ export default async function TripPage({ params }: TripPageProps) {
                 tripId={trip.id}
                 shareToken={trip.share_token}
                 isShareEnabled={trip.is_share_enabled}
+              />
+              <InviteShareButton
+                tripId={trip.id}
+                initialToken={trip.voting_token}
+                initialEnabled={trip.voting_enabled}
+                hasAddedActivities={allActivities.some((a) => a.is_added)}
               />
               <Link
                 href={`/trip/${trip.id}/edit`}
@@ -281,6 +299,13 @@ export default async function TripPage({ params }: TripPageProps) {
                   currency={trip.currency}
                   travelers={trip.travelers}
                 />
+                {trip.voting_enabled && (
+                  <VotingResults
+                    tripId={trip.id}
+                    activities={allActivities}
+                    votingEnabled={trip.voting_enabled}
+                  />
+                )}
               </aside>
             </div>
 
