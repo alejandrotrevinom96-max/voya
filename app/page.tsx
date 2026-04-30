@@ -1,6 +1,8 @@
 import Link from "next/link";
 import LandingInteractive from "@/components/landing/LandingInteractive";
 import BetaBanner from "@/components/landing/BetaBanner";
+import HeroCTA from "@/components/landing/HeroCTA";
+import TemplateCard from "@/components/landing/TemplateCard";
 import { LANDING_CSS } from "@/components/landing/landing-styles";
 
 export const metadata = {
@@ -63,9 +65,9 @@ export default function HomePage() {
               abiertos ni Excel a medias.
             </p>
             <div className="hero-cta-row">
-              <Link href="/auth/signup" className="btn-hero">
+              <HeroCTA href="/auth/signup" className="btn-hero">
                 Planea mi primer viaje gratis →
-              </Link>
+              </HeroCTA>
             </div>
             <p className="hero-microcopy">
               No pides permiso. Solo eliges la fecha.
@@ -94,72 +96,60 @@ export default function HomePage() {
               Elige uno. Pon fechas. Listo. Sin investigar 17 blogs primero.
             </p>
             <div className="templates-grid">
-              <Link
+              <TemplateCard
                 href="/auth/signup?template=pareja"
-                className="template-card"
-              >
-                <span className="template-tag">💕 Pareja</span>
-                <div className="template-emoji">🏞️</div>
-                <h3>Fin de semana romántico</h3>
-                <p>CDMX → Tepoztlán. Cabaña, temazcal y comida real.</p>
-                <div className="template-price">desde $1,200 MXN</div>
-                <span className="template-cta">Planear →</span>
-              </Link>
-              <Link
+                tag="💕 Pareja"
+                emoji="🏞️"
+                title="Fin de semana romántico"
+                description="CDMX → Tepoztlán. Cabaña, temazcal y comida real."
+                price="desde $1,200 MXN"
+                contentName="Fin de semana romántico"
+              />
+              <TemplateCard
                 href="/auth/signup?template=amigas"
-                className="template-card"
-              >
-                <span className="template-tag">👯 Con amigas</span>
-                <div className="template-emoji">🌊</div>
-                <h3>5 días en Tulum</h3>
-                <p>Cenotes, beach club, mezcal. Sin presupuesto inflado.</p>
-                <div className="template-price">desde $4,800 MXN</div>
-                <span className="template-cta">Planear →</span>
-              </Link>
-              <Link
+                tag="👯 Con amigas"
+                emoji="🌊"
+                title="5 días en Tulum"
+                description="Cenotes, beach club, mezcal. Sin presupuesto inflado."
+                price="desde $4,800 MXN"
+                contentName="5 días en Tulum"
+              />
+              <TemplateCard
                 href="/auth/signup?template=sola"
-                className="template-card"
-              >
-                <span className="template-tag">🌅 Sola</span>
-                <div className="template-emoji">🏛️</div>
-                <h3>Primer viaje sola</h3>
-                <p>San Miguel de Allende. Seguro, caminable, sin culpa.</p>
-                <div className="template-price">desde $1,400 MXN</div>
-                <span className="template-cta">Planear →</span>
-              </Link>
-              <Link
+                tag="🌅 Sola"
+                emoji="🏛️"
+                title="Primer viaje sola"
+                description="San Miguel de Allende. Seguro, caminable, sin culpa."
+                price="desde $1,400 MXN"
+                contentName="Primer viaje sola"
+              />
+              <TemplateCard
                 href="/auth/signup?template=lunademiel"
-                className="template-card"
-              >
-                <span className="template-tag">💍 Luna de miel</span>
-                <div className="template-emoji">🌺</div>
-                <h3>Luna de miel económica</h3>
-                <p>Oaxaca + Mazunte. 7 días. Sin endeudarse.</p>
-                <div className="template-price">desde $6,500 MXN</div>
-                <span className="template-cta">Planear →</span>
-              </Link>
-              <Link
+                tag="💍 Luna de miel"
+                emoji="🌺"
+                title="Luna de miel económica"
+                description="Oaxaca + Mazunte. 7 días. Sin endeudarse."
+                price="desde $6,500 MXN"
+                contentName="Luna de miel económica"
+              />
+              <TemplateCard
                 href="/auth/signup?template=reset"
-                className="template-card"
-              >
-                <span className="template-tag">✨ Capítulo nuevo</span>
-                <div className="template-emoji">🌅</div>
-                <h3>Reset · Sayulita</h3>
-                <p>5 días sola. Surf, yoga, atardeceres. Para empezar de nuevo.</p>
-                <div className="template-price">desde $5,500 MXN</div>
-                <span className="template-cta">Planear →</span>
-              </Link>
-              <Link
+                tag="✨ Capítulo nuevo"
+                emoji="🌅"
+                title="Reset · Sayulita"
+                description="5 días sola. Surf, yoga, atardeceres. Para empezar de nuevo."
+                price="desde $5,500 MXN"
+                contentName="Reset · Sayulita"
+              />
+              <TemplateCard
                 href="/auth/signup?template=daytrip"
-                className="template-card"
-              >
-                <span className="template-tag">🌊 Day trip</span>
-                <div className="template-emoji">🏖️</div>
-                <h3>Day trip Acapulco</h3>
-                <p>Salida CDMX. Transporte + playa. Mismo día.</p>
-                <div className="template-price">desde $999 MXN</div>
-                <span className="template-cta">Planear →</span>
-              </Link>
+                tag="🌊 Day trip"
+                emoji="🏖️"
+                title="Day trip Acapulco"
+                description="Salida CDMX. Transporte + playa. Mismo día."
+                price="desde $999 MXN"
+                contentName="Day trip Acapulco"
+              />
             </div>
           </div>
         </section>
@@ -328,9 +318,9 @@ export default function HomePage() {
               <em>suficiente.</em>
             </h2>
             <p>El primero es gratis. Tú solo decides la fecha.</p>
-            <Link href="/auth/signup" className="btn-hero">
+            <HeroCTA href="/auth/signup" className="btn-hero">
               Planear mi primer viaje · gratis →
-            </Link>
+            </HeroCTA>
             <p className="final-cta-fine">
               Sin tarjeta · Cancela cuando quieras · Hecho en México
             </p>

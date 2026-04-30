@@ -3,6 +3,7 @@
 import { useState, FormEvent } from "react";
 import Link from "next/link";
 import { signup } from "../actions";
+import { event as pixelEvent } from "@/lib/fpixel";
 
 export default function SignupForm() {
   const [error, setError] = useState<string>("");
@@ -20,6 +21,9 @@ export default function SignupForm() {
     if (result?.error) {
       setError(result.error);
       setLoading(false);
+    } else {
+      // Signup exitoso — disparar pixel antes del redirect
+      pixelEvent("CompleteRegistration", { currency: "MXN", value: 0 });
     }
   }
 
