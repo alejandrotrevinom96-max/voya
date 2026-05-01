@@ -839,14 +839,22 @@ export const LANDING_CSS = `
 
 .voyaa-landing .voyaa-placeholder-text {
   font-size: 18px;
-  color: var(--ink-soft);
+  color: #999;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
   display: inline-block;
   font-style: italic;
-  opacity: 0.7;
+  opacity: 0.85;
   animation: voyaa-slide-in 400ms ease;
+}
+
+.voyaa-landing .voyaa-placeholder-prefix {
+  color: var(--accent);
+  font-weight: 600;
+  font-style: normal;
+  margin-right: 4px;
+  opacity: 0.7;
 }
 
 .voyaa-landing .voyaa-placeholder-text.animating-out {

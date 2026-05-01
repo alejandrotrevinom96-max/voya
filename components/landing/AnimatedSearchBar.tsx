@@ -53,6 +53,18 @@ export default function AnimatedSearchBar({
   const [hasTrackedTyped, setHasTrackedTyped] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Auto-focus solo en desktop (mobile: abriría el teclado)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    if (!isMobile && inputRef.current) {
+      const t = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 600);
+      return () => clearTimeout(t);
+    }
+  }, []);
+
   // Rotación del placeholder
   useEffect(() => {
     if (isFocused || value.length > 0) return; // pausa si el usuario está escribiendo
@@ -71,7 +83,14 @@ export default function AnimatedSearchBar({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const query = value.trim();
-    if (query.length < 2 || isLoading || disabled) return;
+
+    if (query.length < 2) {
+      // Enfocar el input para que el usuario sepa que debe escribir
+      inputRef.current?.focus();
+      return;
+    }
+
+    if (isLoading || disabled) return;
 
     track("demo_submit", { query: query.substring(0, 50) });
 
@@ -115,6 +134,7 @@ export default function AnimatedSearchBar({
                 key={placeholderIdx}
                 className={`voyaa-placeholder-text ${isAnimating ? "animating-out" : "animating-in"}`}
               >
+                <span className="voyaa-placeholder-prefix">ej:</span>{" "}
                 {ROTATING_PLACEHOLDERS[placeholderIdx]}
               </span>
             </div>
@@ -124,7 +144,7 @@ export default function AnimatedSearchBar({
 
       <button
         type="submit"
-        disabled={value.trim().length < 2 || isLoading || disabled}
+        disabled={isLoading || disabled}
         className="voyaa-search-cta"
       >
         {isLoading ? (
