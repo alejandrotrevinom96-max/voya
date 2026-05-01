@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { track } from "@vercel/analytics";
 import AnimatedSearchBar from "./AnimatedSearchBar";
 import DemoResults from "./DemoResults";
 import DemoModal from "./DemoModal";
@@ -69,6 +70,8 @@ export default function LandingDemoHero() {
       const data: GeneratePreviewResponse = await res.json();
 
       if (!res.ok || !data.success) {
+        const errorType = data.error || "unknown";
+        track("demo_error", { error_type: errorType });
         if (data.error === "limit_reached") {
           setModalVariant("rate_limit");
         } else if (data.error === "no_destination") {
@@ -81,6 +84,7 @@ export default function LandingDemoHero() {
       }
 
       if (data.preview) {
+        track("demo_preview_shown", { destination_key: data.preview.destination_key });
         setPreview(data.preview);
         saveTripToLocalStorage(data.preview, query);
         setShowRecoveryBanner(false);

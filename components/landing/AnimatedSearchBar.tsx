@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { track } from "@vercel/analytics";
 
 const ROTATING_PLACEHOLDERS = [
   // Frustración con la rutina
@@ -49,6 +50,7 @@ export default function AnimatedSearchBar({
   const [placeholderIdx, setPlaceholderIdx] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [hasTrackedTyped, setHasTrackedTyped] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Rotación del placeholder
@@ -71,6 +73,8 @@ export default function AnimatedSearchBar({
     const query = value.trim();
     if (query.length < 2 || isLoading || disabled) return;
 
+    track("demo_submit", { query: query.substring(0, 50) });
+
     // Generar fingerprint simple del navegador
     const fingerprint = generateFingerprint();
     onSubmit(query, fingerprint);
@@ -86,8 +90,17 @@ export default function AnimatedSearchBar({
             ref={inputRef}
             type="text"
             value={value}
-            onChange={(e) => setValue(e.target.value)}
-            onFocus={() => setIsFocused(true)}
+            onChange={(e) => {
+              setValue(e.target.value);
+              if (!hasTrackedTyped && e.target.value.length > 0) {
+                track("demo_input_typed");
+                setHasTrackedTyped(true);
+              }
+            }}
+            onFocus={() => {
+              setIsFocused(true);
+              track("demo_input_focused");
+            }}
             onBlur={() => setIsFocused(false)}
             disabled={isLoading || disabled}
             maxLength={300}

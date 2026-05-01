@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { track } from "@vercel/analytics";
 import type { DemoTripPreview } from "@/lib/landing-demo/types";
 
 interface DemoResultsProps {
@@ -52,11 +53,15 @@ export default function DemoResults({
         <Link
           href={`/auth/signup?from=demo&dest=${encodeURIComponent(preview.destination_key)}`}
           className="voyaa-demo-cta-primary"
+          onClick={() => track("demo_unlock_clicked", { destination_key: preview.destination_key, position: "top" })}
         >
           🔓 Desbloquear itinerario completo
         </Link>
         <button
-          onClick={onShareIntent}
+          onClick={() => {
+            track("demo_share_clicked", { destination_key: preview.destination_key });
+            onShareIntent();
+          }}
           className="voyaa-demo-cta-secondary"
           type="button"
         >
@@ -142,6 +147,7 @@ export default function DemoResults({
         <Link
           href={`/auth/signup?from=demo&dest=${encodeURIComponent(preview.destination_key)}`}
           className="voyaa-demo-cta-primary voyaa-demo-cta-large"
+          onClick={() => track("demo_unlock_clicked", { destination_key: preview.destination_key, position: "bottom" })}
         >
           🔓 Desbloquear mi itinerario completo
         </Link>

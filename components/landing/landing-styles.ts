@@ -1365,25 +1365,32 @@ export const LANDING_CSS = `
 /* ============ RESPONSIVE DEMO ============ */
 @media (max-width: 768px) {
   .voyaa-landing .voyaa-search-row {
-    flex-direction: column;
-    border-radius: 24px;
-    padding: 16px;
-    gap: 8px;
-    align-items: stretch;
+    flex-direction: row;
+    border-radius: 100px;
+    padding: 6px 6px 6px 18px;
+    gap: 10px;
+    align-items: center;
   }
 
   .voyaa-landing .voyaa-search-brand {
-    font-size: 28px;
-    text-align: center;
+    font-size: 22px;
+    flex-shrink: 0;
   }
 
   .voyaa-landing .voyaa-search-input-wrap {
-    height: 44px;
+    height: 40px;
+    flex: 1;
   }
 
   .voyaa-landing .voyaa-search-input,
   .voyaa-landing .voyaa-placeholder-text {
-    font-size: 16px;
+    font-size: 14px;
+  }
+
+  .voyaa-landing .voyaa-search-cta {
+    margin-top: 12px;
+    padding: 14px 24px;
+    font-size: 15px;
   }
 
   .voyaa-landing .voyaa-demo-cta-row {
