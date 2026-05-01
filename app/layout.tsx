@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import ClarityScript from "@/components/analytics/ClarityScript";
 import { ToastProvider } from "@/components/ui/Toast";
 import "./globals.css";
 import "./landing.css";
@@ -75,6 +76,7 @@ export default function RootLayout({
         <ToastProvider>{children}</ToastProvider>
         <Analytics />
         <SpeedInsights />
+        <ClarityScript />
 
         {/* Meta Pixel */}
         <Script id="meta-pixel" strategy="afterInteractive">
