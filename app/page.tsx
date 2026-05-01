@@ -3,6 +3,7 @@ import LandingInteractive from "@/components/landing/LandingInteractive";
 import BetaBanner from "@/components/landing/BetaBanner";
 import HeroCTA from "@/components/landing/HeroCTA";
 import TemplateCard from "@/components/landing/TemplateCard";
+import LandingDemoHero from "@/components/landing/LandingDemoHero";
 import { LANDING_CSS } from "@/components/landing/landing-styles";
 
 export const metadata = {
@@ -46,34 +47,8 @@ export default function HomePage() {
           </div>
         </nav>
 
-        {/* ============ HERO ============ */}
-        <section className="hero">
-          <div className="container">
-            <div className="hero-tag">🌴 Tu primer viaje, gratis · sin tarjeta</div>
-            <h1>
-              Deja de pensar.
-              <br />
-              Tu viaje, ya{" "}
-              <span className="underline-word">
-                <em>planeado</em>
-              </span>
-              .
-            </h1>
-            <p className="hero-sub">
-              Ese viaje que llevas años posponiendo. Voyaa te lo arma en 3
-              minutos — itinerario realista, presupuesto claro, sin tabs
-              abiertos ni Excel a medias.
-            </p>
-            <div className="hero-cta-row">
-              <HeroCTA href="/auth/signup" className="btn-hero">
-                Planea mi primer viaje gratis →
-              </HeroCTA>
-            </div>
-            <p className="hero-microcopy">
-              No pides permiso. Solo eliges la fecha.
-            </p>
-          </div>
-        </section>
+        {/* ============ HERO con DEMO ============ */}
+        <LandingDemoHero />
 
         {/* ============ QUOTE STRIP ============ */}
         <div className="quote-strip">
