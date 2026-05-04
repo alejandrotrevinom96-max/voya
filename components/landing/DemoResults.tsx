@@ -48,14 +48,14 @@ export default function DemoResults({
         <p className="voyaa-demo-trip-summary">{preview.trip_summary}</p>
       </div>
 
-      {/* CTAs principales arriba (también van abajo) */}
+      {/* CTAs principales arriba */}
       <div className="voyaa-demo-cta-row voyaa-demo-cta-row-top">
         <Link
           href={`/auth/signup?from=demo&dest=${encodeURIComponent(preview.destination_key)}`}
           className="voyaa-demo-cta-primary"
           onClick={() => track("demo_unlock_clicked", { destination_key: preview.destination_key, position: "top" })}
         >
-          🔓 Desbloquear itinerario completo
+          💾 Guardar este viaje en mi cuenta
         </Link>
         <button
           onClick={() => {
@@ -65,16 +65,14 @@ export default function DemoResults({
           className="voyaa-demo-cta-secondary"
           type="button"
         >
-          💌 Compartir con mi pareja
+          💌 Compartir este viaje
         </button>
       </div>
 
-      {/* Actividades visibles */}
+      {/* Itinerario completo — todas las actividades */}
       <div className="voyaa-demo-activities-section">
         <p className="voyaa-demo-section-eyebrow">
-          Aquí va una probada de tu viaje · {preview.visible_activities.length} de{" "}
-          {preview.visible_activities.length + preview.blurred_activities.length}{" "}
-          actividades
+          Tu itinerario completo · {preview.visible_activities.length} actividades
         </p>
 
         <div className="voyaa-demo-activities-grid">
@@ -110,38 +108,6 @@ export default function DemoResults({
         </div>
       </div>
 
-      {/* Actividades blureadas */}
-      <div className="voyaa-demo-blurred-section">
-        <div className="voyaa-demo-blurred-header">
-          <span className="voyaa-demo-lock-icon">🔒</span>
-          <span className="voyaa-demo-blurred-title">
-            +{preview.blurred_activities.length} actividades únicas en tu itinerario completo
-          </span>
-        </div>
-
-        <div className="voyaa-demo-blurred-grid">
-          {preview.blurred_activities.map((act) => (
-            <div key={act.id} className="voyaa-demo-blurred-card">
-              <div className="voyaa-demo-blurred-content">
-                {act.highlight_label && (
-                  <span className="voyaa-demo-highlight-label voyaa-demo-highlight-blurred">
-                    {act.highlight_label}
-                  </span>
-                )}
-                <div className="voyaa-demo-blurred-emoji">{act.emoji}</div>
-                <p className="voyaa-demo-blurred-teaser">{act.teaser}</p>
-              </div>
-              <div className="voyaa-demo-blur-overlay" />
-            </div>
-          ))}
-        </div>
-
-        <p className="voyaa-demo-blurred-footer">
-          Incluye: cenas con vista, spots locales secretos, ruta de cafés,
-          experiencias únicas y más.
-        </p>
-      </div>
-
       {/* CTAs finales */}
       <div className="voyaa-demo-cta-row voyaa-demo-cta-row-bottom">
         <Link
@@ -149,7 +115,7 @@ export default function DemoResults({
           className="voyaa-demo-cta-primary voyaa-demo-cta-large"
           onClick={() => track("demo_unlock_clicked", { destination_key: preview.destination_key, position: "bottom" })}
         >
-          🔓 Desbloquear mi itinerario completo
+          💾 Guardar mi viaje y planear más
         </Link>
         <p className="voyaa-demo-cta-microcopy">
           Crea tu cuenta gratis · 30 segundos · sin tarjeta

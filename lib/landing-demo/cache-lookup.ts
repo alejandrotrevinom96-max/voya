@@ -152,12 +152,11 @@ CONTEXTO:
 - Contexto del usuario: ${parsed.context || "(no especificado)"}
 
 REGLAS:
-1. Genera EXACTAMENTE 13 actividades: 5 visibles con detalle, 8 blureadas con teaser corto.
-2. Las 5 visibles deben ser: 1 cultura, 1 comida, 1 outdoor, 1 hidden gem, 1 nightlife/atardecer.
-3. Las 8 blureadas son LAS MÁS aspiracionales (cenas con vista, lugares secretos, etc).
-4. Costos en MXN realistas para el mercado mexicano.
-5. NO inventes lugares — usa lugares reales del destino.
-6. Responde SOLO con JSON válido, sin markdown, sin explicación.
+1. Genera EXACTAMENTE 13 actividades visibles con detalle completo (blurred_activities SIEMPRE vacío []).
+2. Distribución: 3 cultura/historia, 3 comida (calle+mid+fine), 3 outdoor/naturaleza, 2 nightlife/atardecer, 2 hidden gems.
+3. Costos en MXN realistas para el mercado mexicano.
+4. NO inventes lugares — usa lugares reales del destino.
+5. Responde SOLO con JSON válido, sin markdown, sin explicación.
 
 Schema:
 {
@@ -177,15 +176,7 @@ Schema:
       "highlight_label": null
     }
   ],
-  "blurred_activities": [
-    {
-      "id": "6",
-      "category": "food",
-      "emoji": "🍽️",
-      "teaser": "Cena con vista al mar",
-      "highlight_label": "Hidden gem ✦"
-    }
-  ]
+  "blurred_activities": []
 }`;
 
   try {

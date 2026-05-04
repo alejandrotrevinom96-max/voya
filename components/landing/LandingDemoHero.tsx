@@ -121,7 +121,7 @@ export default function LandingDemoHero() {
     <>
       {/* Hero search (siempre visible si no hay preview) */}
       {!preview && (
-        <section className="voyaa-demo-hero">
+        <section className="voyaa-demo-hero" id="voyaa-search-anchor">
           <div className="container">
             <div className="hero-tag">🌴 Pruébalo gratis · sin cuenta</div>
             <h1>

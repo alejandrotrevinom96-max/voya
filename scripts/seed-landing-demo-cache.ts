@@ -47,15 +47,12 @@ const SYSTEM_PROMPT = `Eres Voyaa, una app que arma viajes para mexicanos.
 Genera un preview de viaje en JSON estricto. Lugares REALES del destino, NUNCA inventados.
 
 REGLAS:
-1. Genera EXACTAMENTE 13 actividades:
-   - 5 visibles con detalle completo
-   - 8 blureadas (solo teaser)
-2. Las 5 visibles deben balancearse: 1 cultura, 1 comida, 1 outdoor, 1 hidden gem, 1 nightlife/atardecer.
-3. Las 8 blureadas son LAS MÁS aspiracionales y específicas (cenas con vista, playas secretas, lugares con nombre real, experiencias únicas).
-4. Costos en MXN realistas para mercado mexicano (no inflar precios gringos).
-5. Categorías permitidas: "culture", "food", "outdoor", "hidden_gem", "nightlife", "shopping", "wellness".
-6. highlight_label opcional: "Hidden gem ✦", "Local favorito ✦", "Romántico ✦", "Imperdible ✦", null.
-7. Responde SOLO con JSON válido, sin markdown, sin explicación.
+1. Genera EXACTAMENTE 13 actividades visibles con detalle completo. blurred_activities SIEMPRE [].
+2. Distribución: 3 cultura/historia, 3 comida (mix calle+mid-range+fine dining), 3 outdoor/naturaleza, 2 nightlife/atardecer, 2 hidden gems.
+3. Costos en MXN realistas para mercado mexicano (no inflar precios gringos).
+4. Categorías permitidas: "culture", "food", "outdoor", "hidden_gem", "nightlife", "shopping", "wellness".
+5. highlight_label opcional: "Hidden gem ✦", "Local favorito ✦", "Romántico ✦", "Imperdible ✦", null.
+6. Responde SOLO con JSON válido, sin markdown, sin explicación.
 
 Schema:
 {
@@ -74,15 +71,7 @@ Schema:
       "highlight_label": "string|null"
     }
   ],
-  "blurred_activities": [
-    {
-      "id": "b1",
-      "category": "string",
-      "emoji": "string",
-      "teaser": "frase corta en español",
-      "highlight_label": "string|null"
-    }
-  ]
+  "blurred_activities": []
 }`;
 
 async function generateForDestination(
@@ -112,12 +101,10 @@ async function generateForDestination(
   // Validación básica
   if (
     !Array.isArray(parsed.visible_activities) ||
-    parsed.visible_activities.length !== 5 ||
-    !Array.isArray(parsed.blurred_activities) ||
-    parsed.blurred_activities.length !== 8
+    parsed.visible_activities.length !== 13
   ) {
     throw new Error(
-      `Invalid response for ${dest.display}: expected 5 visible + 8 blurred`
+      `Invalid response for ${dest.display}: expected 13 visible activities, got ${parsed.visible_activities?.length ?? 0}`
     );
   }
 
@@ -129,7 +116,7 @@ async function generateForDestination(
     trip_summary: parsed.trip_summary,
     total_estimated_cost: parsed.total_estimated_cost,
     visible_activities: parsed.visible_activities,
-    blurred_activities: parsed.blurred_activities,
+    blurred_activities: [],
   };
 }
 
@@ -170,7 +157,7 @@ async function main() {
         failed++;
       } else {
         console.log(
-          `✅ ${dest.display} guardado (${generated.visible_activities.length} visibles + ${generated.blurred_activities.length} blureadas)`
+          `✅ ${dest.display} guardado (${generated.visible_activities.length} actividades visibles)`
         );
         success++;
       }

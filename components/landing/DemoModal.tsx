@@ -61,17 +61,17 @@ export default function DemoModal({
           <>
             <div className="voyaa-modal-emoji">💌</div>
             <h2 className="voyaa-modal-title">
-              Compartir con tu pareja o amigas
+              Comparte tu viaje
             </h2>
             <p className="voyaa-modal-body">
-              Para que otras personas puedan votar tu itinerario, primero
-              guárdalo en tu cuenta. Toma 30 segundos.
+              Para que las personas con las que viajes puedan votar tu
+              itinerario, primero guárdalo en tu cuenta. Toma 30 segundos.
             </p>
             <Link
               href={`/auth/signup?from=demo-share${destinationKey ? `&dest=${encodeURIComponent(destinationKey)}` : ""}`}
               className="voyaa-modal-cta"
             >
-              Crear cuenta y compartir →
+              Guardar y compartir →
             </Link>
             <p className="voyaa-modal-microcopy">
               Tu viaje queda guardado · invitas con un link · ellas votan sin

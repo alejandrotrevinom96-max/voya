@@ -1,7 +1,5 @@
-import Link from "next/link";
 import LandingInteractive from "@/components/landing/LandingInteractive";
 import BetaBanner from "@/components/landing/BetaBanner";
-import HeroCTA from "@/components/landing/HeroCTA";
 import TemplateCard from "@/components/landing/TemplateCard";
 import LandingDemoHero from "@/components/landing/LandingDemoHero";
 import { LANDING_CSS } from "@/components/landing/landing-styles";
@@ -40,25 +38,15 @@ export default function HomePage() {
               <a href="#templates">Viajes</a>
               <a href="#como">Cómo funciona</a>
               <a href="#precios">Precios</a>
-              <Link href="/auth/signup" className="btn-primary-landing">
+              <a href="#voyaa-search-anchor" className="btn-primary-landing">
                 Empezar gratis
-              </Link>
+              </a>
             </div>
           </div>
         </nav>
 
         {/* ============ HERO con DEMO ============ */}
         <LandingDemoHero />
-
-        {/* ============ QUOTE STRIP ============ */}
-        <div className="quote-strip">
-          <div className="container">
-            <div className="quote-strip-inner">
-              &ldquo;Inf, me urge para no sobre pensar 🥺&rdquo;
-              <small>— Comentario real en Instagram</small>
-            </div>
-          </div>
-        </div>
 
         {/* ============ TEMPLATES ============ */}
         <section className="section" id="templates">
@@ -134,7 +122,7 @@ export default function HomePage() {
           <div className="container">
             <div className="section-eyebrow">Sin fricción</div>
             <h2 className="section-title">
-              3 minutos. <em>Ese es el plan.</em>
+              30 segundos. <em>Ese es el plan.</em>
             </h2>
             <p className="section-sub">
               No te vamos a hacer responder un quiz de 20 preguntas. Lo
@@ -154,7 +142,7 @@ export default function HomePage() {
                 <h3>Voyaa arma todo</h3>
                 <p>
                   Itinerario día por día, presupuesto real en pesos, hospedaje,
-                  actividades. En 3 minutos.
+                  actividades. En 30 segundos.
                 </p>
               </div>
               <div className="how-step">
@@ -239,48 +227,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ============ AGE INCLUSION ============ */}
-        <section className="section">
-          <div className="container">
-            <div className="age-section">
-              <div className="section-eyebrow">No solo para morritas</div>
-              <h2>
-                Si tienes 45 y van puras chicas en el feed —
-                <br />
-                <em>esto también es para ti.</em>
-              </h2>
-              <p>
-                El marketing de viajes te ha hecho sentir que ya pasó tu
-                momento.
-                <br />
-                No es cierto.
-              </p>
-              <p>
-                Voyaa arma viajes para mujeres que están empezando un capítulo
-                nuevo: después de un divorcio, después de criar, después de lo
-                que sea.
-              </p>
-              <div className="age-quote">
-                &ldquo;Yo armaba los itinerarios y tours, pero ahora sola me da
-                miedo. Mi pareja falleció en diciembre y su sueño era ir a
-                Angkor.&rdquo;
-                <small>— Comentario real en grupo de Facebook · 2026</small>
-              </div>
-              <p>
-                Hay un viaje pendiente. Y hay una manera de armarlo sin sentirse
-                perdida.
-              </p>
-              <Link
-                href="/auth/signup"
-                className="btn-hero"
-                style={{ marginTop: "16px" }}
-              >
-                Empieza el tuyo →
-              </Link>
-            </div>
-          </div>
-        </section>
-
         {/* ============ PRICING + FAQ (Client Component) ============ */}
         <LandingInteractive />
 
@@ -293,9 +239,9 @@ export default function HomePage() {
               <em>suficiente.</em>
             </h2>
             <p>El primero es gratis. Tú solo decides la fecha.</p>
-            <HeroCTA href="/auth/signup" className="btn-hero">
+            <a href="#voyaa-search-anchor" className="btn-hero">
               Planear mi primer viaje · gratis →
-            </HeroCTA>
+            </a>
             <p className="final-cta-fine">
               Sin tarjeta · Cancela cuando quieras · Hecho en México
             </p>

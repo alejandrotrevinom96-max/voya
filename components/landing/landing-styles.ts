@@ -761,6 +761,30 @@ export const LANDING_CSS = `
 }
 ` + `
 
+/* ============ PRICING BETA ============ */
+.voyaa-landing .pricing-beta {
+  background: var(--warm);
+  text-align: center;
+}
+.voyaa-landing .pricing-beta-line {
+  font-family: Georgia, serif;
+  font-size: clamp(20px, 3vw, 28px);
+  color: var(--ink);
+  max-width: 640px;
+  margin: 24px auto 12px;
+  line-height: 1.4;
+}
+.voyaa-landing .pricing-beta-line strong {
+  color: var(--accent);
+  font-style: italic;
+  font-weight: 400;
+}
+.voyaa-landing .pricing-beta-microcopy {
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin-top: 8px;
+}
+
 /* ============ DEMO HERO ============ */
 .voyaa-landing .voyaa-demo-hero {
   padding: 60px 0 40px;

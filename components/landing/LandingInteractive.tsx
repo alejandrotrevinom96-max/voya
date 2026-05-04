@@ -1,9 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-
-type PriceMode = "trip" | "annual";
 
 const FAQS = [
   {
@@ -32,7 +29,7 @@ const FAQS = [
   },
   {
     q: "¿Y si no me responden? Las agencias tardan días.",
-    a: "Voyaa no te hace esperar. No mandas un mensaje y rezas. El itinerario aparece en 3 minutos, a la hora que sea. Esa es la diferencia.",
+    a: "Voyaa no te hace esperar. No mandas un mensaje y rezas. El itinerario aparece en 30 segundos, a la hora que sea. Esa es la diferencia.",
   },
   {
     q: "¿Puedo cancelar Pro cuando quiera?",
@@ -41,151 +38,24 @@ const FAQS = [
 ];
 
 export default function LandingInteractive() {
-  const [priceMode, setPriceMode] = useState<PriceMode>("trip");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   return (
     <>
-      {/* ============ PRICING ============ */}
-      <section className="section pricing" id="precios">
+      {/* ============ PRICING SIMPLIFICADO BETA ============ */}
+      <section className="section pricing-beta" id="precios">
         <div className="container">
           <div className="section-eyebrow">Precios honestos</div>
           <h2 className="section-title">
-            Empieza gratis. <em>Paga solo si vuelves.</em>
+            Gratis durante beta. <em>Y punto.</em>
           </h2>
-          <p className="section-sub">
-            Tu primer viaje sale gratis. Si te enamoras, pagas por viaje o
-            anual. Sin suscripciones que se olvidan, sin sorpresas en tu
-            tarjeta.
+          <p className="pricing-beta-line">
+            Después del beta: <strong>$150 por viaje</strong> o{" "}
+            <strong>$600 al año</strong> (viajes ilimitados).
           </p>
-
-          <div className="pricing-grid">
-            {/* FREE */}
-            <div className="price-card">
-              <h3 className="price-card-name">Gratis</h3>
-              <p className="price-card-tagline">
-                Para probar antes de comprometerte. Para siempre.
-              </p>
-              <div className="price-amount">
-                <span className="number">$0</span>
-              </div>
-              <p className="price-detail">Para siempre · sin tarjeta</p>
-              <ul className="price-features">
-                <li>
-                  <strong>1 viaje</strong> cada 3 meses
-                </li>
-                <li>Itinerario completo con AI</li>
-                <li>Presupuesto en pesos reales</li>
-                <li>
-                  <strong>Invita a tu pareja o amigas</strong> a votar (gratis)
-                </li>
-                <li>Auto-agendar actividades por día</li>
-              </ul>
-              <Link href="/auth/signup" className="price-cta">
-                Empezar gratis
-              </Link>
-            </div>
-
-            {/* PRO */}
-            <div className="price-card featured">
-              <span className="price-badge">⭐ Más popular</span>
-              <h3 className="price-card-name">Pro</h3>
-              <p className="price-card-tagline">
-                Para la viajera que ya no se aguanta.
-              </p>
-
-              <div className="price-toggle">
-                <button
-                  className={priceMode === "trip" ? "active" : ""}
-                  onClick={() => setPriceMode("trip")}
-                  type="button"
-                >
-                  Por viaje
-                </button>
-                <button
-                  className={priceMode === "annual" ? "active" : ""}
-                  onClick={() => setPriceMode("annual")}
-                  type="button"
-                >
-                  Anual (ahorra 67%)
-                </button>
-              </div>
-
-              {priceMode === "trip" ? (
-                <>
-                  <div className="price-amount">
-                    <span className="currency">$</span>
-                    <span className="number">150</span>
-                    <span className="period">/ viaje</span>
-                  </div>
-                  <p className="price-detail">
-                    MXN · pagas solo cuando viajas
-                  </p>
-                </>
-              ) : (
-                <>
-                  <div className="price-amount">
-                    <span className="currency">$</span>
-                    <span className="number">600</span>
-                    <span className="period">/ año</span>
-                  </div>
-                  <p className="price-detail">
-                    MXN · ~$50/mes · 4+ viajes salen rentables
-                  </p>
-                </>
-              )}
-
-              <ul className="price-features">
-                <li>
-                  <strong>Viajes ilimitados</strong>
-                </li>
-                <li>
-                  <strong>Invitados ilimitados</strong> al grupo
-                </li>
-                <li>Itinerario AI personalizado</li>
-                <li>Presupuesto y calendario sincronizado</li>
-                <li>Cambios y rearmados sin límite</li>
-                <li>Auto-agendar inteligente</li>
-                <li>Soporte prioritario</li>
-              </ul>
-              <Link
-                href={`/auth/signup?plan=pro&billing=${priceMode}`}
-                className="price-cta"
-              >
-                Quiero Pro
-              </Link>
-            </div>
-          </div>
-
-          <p className="price-disclaimer">
-            Sin tarjeta para empezar · Cancela cuando quieras · Precios en pesos
-            mexicanos
+          <p className="pricing-beta-microcopy">
+            Sin tarjeta · sin compromiso · cancela cuando quieras
           </p>
-
-          <div className="market-prices">
-            <h4>$150 por viaje pone en perspectiva</h4>
-            <p>Lo que cuesta el viaje real (no Voyaa) en el mercado mexicano:</p>
-            <div className="market-row">
-              <span>Day trip Acapulco</span>
-              <strong>$999 MXN</strong>
-            </div>
-            <div className="market-row">
-              <span>Day trip Tepoztlán</span>
-              <strong>$1,200 MXN</strong>
-            </div>
-            <div className="market-row">
-              <span>Day trip San Miguel de Allende</span>
-              <strong>$1,400 MXN</strong>
-            </div>
-            <div className="market-row">
-              <span>Tour Marruecos · 6 días</span>
-              <strong>~$8,000 MXN</strong>
-            </div>
-            <div className="market-summary">
-              Voyaa cuesta menos que <strong>una pizza</strong>. Y te ahorra 8
-              horas por viaje.
-            </div>
-          </div>
         </div>
       </section>
 
